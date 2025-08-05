@@ -10,7 +10,7 @@
 
 ## Dify configuration(for MinerU):
 1. MinerU FastApi: mineru-api --host 127.0.0.1 --port \<port number\>
-2. 
+2. Inside dify: import 
 
 ## USING Guidance:
 1. Designer:
