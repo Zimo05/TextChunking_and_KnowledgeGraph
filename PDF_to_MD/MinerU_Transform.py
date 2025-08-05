@@ -1,17 +1,17 @@
 from Config.Settings import setting
-from openai import OpenAI
+from PDF_to_MD.Check_File_Type import file_judge, file_name
 import os
 import time
 import requests
 
 class PDFProcessor:
-    def __init__(self, token):
-        self.token = setting.Designer['MinerU']['API']
-        self.headers = {
-            'Authorization': f'Bearer {token}'
-        }
+    def __init__(self):
+        self.token = setting.Designer['MinerU_Token']
         self.file_path = setting.USER['file_path']
         self.subject = setting.USER['subject']
+        self.file_judge = file_judge
+        self.file_name = file_name
+        self.ouput_path_base = setting.Designer['Storage']['PDF_to_MD']['MD_file']
 
     def upload_file(self):
         print(f"Uploading: {os.path.basename(self.file_path)}")
@@ -33,7 +33,7 @@ class PDFProcessor:
             return None
 
     def process_pdf(self):
-        pdf_url = self.upload_file(self.file_path)
+        pdf_url = self.upload_file()
         if not pdf_url:
             return None
 
@@ -47,7 +47,7 @@ class PDFProcessor:
         if self.subject == 'ENG':
             lag = 'en'
         else:
-            lag = 'cn'
+            lag = 'ch'
 
         data = {
             'url': pdf_url,
@@ -74,13 +74,13 @@ class PDFProcessor:
             
             if state == 'done':
                 zip_url = status_data['data']['full_zip_url']
-                print(f"V 处理完成！")
-                print(f"@ 下载地址: {zip_url}")
-                self.download_result(zip_url, task_id)
-                return status_data
+                print(f"V Complete successfully！")
+                print(f"@ Download path: {zip_url}")
+                mineru_zip_path = self.download_result(zip_url)
+                return mineru_zip_path
             
             elif state == 'failed':
-                print(f"X 处理失败: {status_data['data']['err_msg']}")
+                print(f"X Process fail: {status_data['data']['err_msg']}")
                 return None
             
             elif state == 'running':
@@ -90,8 +90,22 @@ class PDFProcessor:
                 print(f"T Processing page: {extracted}/{total}")
 
 
-    def download_result(self, zip_url, task_id):
-        save_path = f''
+    def download_result(self, zip_url):
+        file_type = self.file_judge['file_type']
+        file_name_base = self.file_name
+        file_name_base = file_name_base.replace('.pdf', '')
+        save_path = f'{self.ouput_path_base}/{file_type}/{self.subject}/{file_name_base}.zip'
+        try:
+            response = requests.get(zip_url, stream=True)
+            with open(save_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8190):
+                    f.write(chunk)
+
+            return save_path
+        except Exception as e:
+            print(f'Error: {e}')
 
 
-
+processor = PDFProcessor()
+processor.upload_file()
+mineru_zip_path = processor.process_pdf()
