@@ -9,7 +9,7 @@
        - https://download.pytorch.org/whl/torch, **using torchvision0.22.1 + cu128, and choose the sepcific python version**
 
 ## Dify configuration(for MinerU):
-1. MinerU FastApi: mineru-api --host 127.0.0.1 --port 15555 (here 15555 is example port number)
+1. MinerU FastApi: mineru-api --host 127.0.0.1 --port <port number>
 2. 
 
 ## USING Guidance:
