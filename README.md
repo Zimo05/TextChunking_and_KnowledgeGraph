@@ -1,5 +1,16 @@
 # TextChunking_and_KnowledgeGraph
 
+## MinerU configuration(GPU version):
+1. Create a virtual environment inside the MinerU folder
+2. run the requirement.txt
+3. **Confugure torch and torchvision:**
+    - link:
+       - https://download.pytorch.org/whl/torchvision, **using torch2.7.1 + cu128, and choose the sepcific python version**
+       - https://download.pytorch.org/whl/torch, **using torchvision0.22.1 + cu128, and choose the sepcific python version**
+
+## Dify configuration(for MinerU):
+
+
 ## USING Guidance:
 1. Designer:
 - Open the Config.Settings to modify the dify, neo4j and elastic search API key and personal settings
