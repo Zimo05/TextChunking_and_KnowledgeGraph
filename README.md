@@ -1,9 +1,9 @@
 # TextChunking_and_KnowledgeGraph
 
 ## MinerU configuration(GPU version):
-1. Create a virtual environment, run the requirement.txt
-2. Inside the TextChunking_and_KnowledgeGraph folder, pull the MinerU repositpry
+1. Inside the TextChunking_and_KnowledgeGraph folder, pull the MinerU repositpry
    - git clone https://github.com/opendatalab/MinerU.git
+2. Create a virtual environment, run the requirement.txt
 3. **Confugure torch and torchvision:**
     - link:
        - https://download.pytorch.org/whl/torchvision, **using torch2.7.1 + cu128, and choose the sepcific python version**
