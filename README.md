@@ -9,9 +9,9 @@
 - follow the guidance to complete the file uploading and Configure settings
  
 ## 使用指南： 
-1. 后台: 
-— 打开Confid.Settings设置修改dify， neo4j和elastic搜索API密钥和个人设置 
-— 根据需要更新输入和输出数据路径 
-2. 用户: 
-— 打开“UserImplementation”文件夹，运行“UserCommand.py” 
-— 根据界面提示完成文件上传和配置
+1. 后台:
+   - 打开Confid.Settings设置修改dify， neo4j和elastic搜索API密钥和个人设置
+   - 根据需要更新输入和输出数据路径 
+3. 用户:
+   - 打开“UserImplementation”文件夹，运行“UserCommand.py”
+   - 根据界面提示完成文件上传和配置
