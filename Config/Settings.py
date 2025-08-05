@@ -8,6 +8,7 @@ class settings:
             'DIFY_URL': "http://localhost/v1/workflows/run",
             'DIFY_USER': ''
             },
+        'MinerU_Token': '', 
         'NEO4J': {
             'NEO4J_URL': '',
             'NEO4J_USERNAME': '',
