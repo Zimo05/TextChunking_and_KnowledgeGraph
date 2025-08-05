@@ -1,10 +1,14 @@
 from Config.Settings import setting
 from openai import OpenAI
 import requests
+import os
+import time
 
 class Transform:
-    def __init__(self, file):
+    def __init__(self):
         self.file_path = setting.USER['file_path']
+        self.subject = setting.USER['subject']
+        self.TOKEN = setting.Designer['MinerU']['API']
         
     def implement_MinerU(self): 
         url='https://mineru.net/api/v4/extract/task'
@@ -24,7 +28,9 @@ class Transform:
         
         return output
     
+    
+    
 transform = Transform()
-MD_File = transform.implement_MinerU()
 
-# 转换后，# 的标题分类，教科书比较难处理，试卷的可以用re结合神经网络判断是否应该加上该 #
+
+

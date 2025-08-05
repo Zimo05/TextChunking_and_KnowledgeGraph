@@ -8,6 +8,9 @@ class settings:
             'DIFY_URL': "http://localhost/v1/workflows/run",
             'DIFY_USER': 'Zimo'
             },
+        'MinerU':{
+            'API': 'eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJqdGkiOiI5MDMwOTkwMCIsInJvbCI6IlJPTEVfUkVHSVNURVIiLCJpc3MiOiJPcGVuWExhYiIsImlhdCI6MTc1NDM3MTEzMiwiY2xpZW50SWQiOiJsa3pkeDU3bnZ5MjJqa3BxOXgydyIsInBob25lIjoiIiwib3BlbklkIjpudWxsLCJ1dWlkIjoiMjk4MDBjMzktMjg4ZS00MzVjLWFlZjEtZDVkNGE0MWQ3OWY3IiwiZW1haWwiOiIiLCJleHAiOjE3NTU1ODA3MzJ9.hCmv_9U2agTlLa_1UmVybmgLdFfYw7uaDXd36GS5Y-eKhB5OUdpHqfYRnuVVbJ4RSbm-dCKh5VX9b1fdRiajEw'
+        },
         'NEO4J': {
             'NEO4J_URL': 'bolt://localhost:7474',
             'NEO4J_USERNAME': 'neo4j',
