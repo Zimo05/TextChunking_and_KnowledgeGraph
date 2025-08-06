@@ -89,7 +89,6 @@ class PDFProcessor:
                 total = progress.get('total_pages', 0)
                 print(f"T Processing page: {extracted}/{total}")
 
-
     def download_result(self, zip_url):
         file_type = self.file_judge['file_type']
         file_name_base = self.file_name
@@ -105,7 +104,11 @@ class PDFProcessor:
         except Exception as e:
             print(f'Error: {e}')
 
+    def main(self):
+        self.upload_file()
+        mineru_zip_path = self.process_pdf()
+
+        return mineru_zip_path
 
 processor = PDFProcessor()
-processor.upload_file()
-mineru_zip_path = processor.process_pdf()
+mineru_zip_path = processor.main()
