@@ -1,4 +1,4 @@
-from Parser.MD_section_parser import BookTree, Node
+from Parser.MD_section_parser import Node, BookTree
 from Config.Settings import setting
 from openai import OpenAI
 import pandas as pd
@@ -19,53 +19,51 @@ class LumberChunker:
         self.nlp_Eng = spacy.load("en_core_web_sm")
         self.subject = setting.USER['subject']
         self.output_path_base = setting.Designer['Storage']['Parser']['Chunked_book']
-        self.file_name = file_name
+        self.file_name = file_name.replace('.pdf', '')
         self.BookTree = BookTree
 
     def lumberchunker(self):
-        chunked_data = []
-    # data_separate是不管层级的展开的分类，   NewBookTree是管层级的
-        for chapter1 in self.BookTree: # 一集
-            NewBookTree = self._initialize_chapter_structure(chapter1)
-            extra_question = queue.Queue()
+            chunked_data = []
+        # data_separate是不管层级的展开的分类，   NewBookTree是管层级的
+            for chapter1 in self.book_tree: # 一集
+                Chapter_structure = self._initialize_chapter_structure(chapter1)
+                extra_question = queue.Queue()
 
-            for chapter2 in chapter1.children: # 二级
-                chapter2_content_list = []
-                data_separate = self._initialize_data_separate(chapter2)
-                
-                NewBookTree[chapter1]["sections"][chapter2] = chapter2_content_list   
-                # 后面记得处理二级标题下的内容，用三级标题多出来的extra question，二级一下的多出来的储存好，最后放进大章节的内容里
-                for chapter3 in chapter2.children:
-                    # 判断节点是否为知识点，是的话就形成dict加进chapter2的list，不是的话，就加进问题,最后统一处理进chapter2的问题块
+                for chapter2 in chapter1.children: # 二级
+                    chapter2_content_list = []
+                    data_separate = self._initialize_data_separate(chapter2)
+                    
+                    Chapter_structure[chapter1]["sections"][chapter2] = chapter2_content_list   
+                    # 后面记得处理二级标题下的内容，用三级标题多出来的extra question，二级一下的多出来的储存好，最后放进大章节的内容里
+                    for chapter3 in chapter2.children:
+                        # 判断节点是否为知识点，是的话就形成dict加进chapter2的list，不是的话，就加进问题,最后统一处理进chapter2的问题块
 
-                    self._classify_node(chapter3, data_separate, chapter2_content_list)
+                        chapter3_content_dict = self._classify_node(chapter3, data_separate, chapter2_content_list)
 
-                    if chapter3 in data_separate['知识']:
-                        chapter3_content_dict = {chapter3:[]}
-                        chapter2_content_list.append(chapter3_content_dict)
-                        # child chapters，处理四级标题的东西
-                        self._process_child_chapters(chapter3, data_separate, chapter3_content_dict[chapter3])
-                        # 以上就是把所有的知识节点都存进去了，下面处理content
+                        if chapter3_content_dict is not None:
+                            self._process_child_chapters(chapter3, data_separate, chapter3_content_dict[chapter3])
+                            # 以上就是把所有的知识节点都存进去了，下面处理content
 
-                # question content
-                question_content = self._clean_question_content(data_separate['题目'])
-                question_content_queue = self._split_sentences_general(question_content)
+                    # question content
+                    question_content = self._clean_question_content(data_separate['题目'])
+                    question_content_queue = self._split_sentences_general(question_content)
 
-                # 处理知识节点
-                for entry in chapter2_content_list:
-                    for key in entry.keys():
-                        self._chunk_all_nodes(key, question_content_queue, entry)
+                    # 处理知识节点
+                    for ch3_dict in chapter2_content_list:
+                        for key, list in ch3_dict.items():
+                            self._chunk_all_nodes(key, question_content_queue, ch3_dict)
 
-                # 处理chapter2.content：
-                self._classify_node(chapter3, data_separate, chapter2_content_list)
+                    # 处理chapter2.content：
+                    self._process_chapter_content(chapter3, chapter2_content_list, question_content_queue)
 
-                if not question_content_queue.empty(): # Remaining question content
-                    self._handle_remaining_questions(question_content_queue, chapter2_content_list, extra_question)
+                    if not question_content_queue.empty(): # Remaining question content
+                        self._handle_remaining_questions(question_content_queue, chapter2_content_list, extra_question)
+                    Chapter_structure[chapter1]['sections'][chapter2] = chapter2_content_list
 
-            self._process_top_level_chapter_content(chapter1, NewBookTree, extra_question)            
+                self._process_top_level_chapter_content(chapter1, Chapter_structure, extra_question)            
 
-            chunked_data.append(NewBookTree)
-        return chunked_data
+                chunked_data.append(Chapter_structure)
+            return chunked_data
 
     def _process_chapter_content(self, chapter, content_list, question_queue):
         check = self._check_len(chapter.content)
@@ -89,72 +87,68 @@ class LumberChunker:
                 content_list.append(combined)
 
     def _process_top_level_chapter_content(self, chapter, book_tree, extra_questions):
+        def process_large_content(content):
+            sentences = self._split_sentences_general(content)
+            chunks = []
+            current_chunk = ''
+            while not sentences.empty():
+                sentence = sentences.get()
+                if len(current_chunk) + len(sentence) <= 1000:
+                    current_chunk += sentence + "\n"
+                else:
+                    if current_chunk:
+                        chunks.append(current_chunk.strip())
+                    current_chunk = sentence + "\n"
+                    while len(current_chunk) > 1000:
+                        chunks.append(current_chunk[:1000])
+                        current_chunk = current_chunk[1000:]
+            if current_chunk:
+                chunks.append(current_chunk.strip())
+            return chunks
+        def process_small_content(content, extra_questions):
+            while len(content) < 600 and not extra_questions.empty():
+                content += "\n" + extra_questions.get()
+            
+            if len(content) > 1000:
+                chunk = content[:1000]
+                remaining = content[1000:]
+                extra_questions.put(remaining)
+                return [chunk]
+            else:
+                return [content]
+        def handle_extra_questions(extra_questions, content_list):
+            current_chunk = ''
+            while not extra_questions.empty():
+                question = extra_questions.get()
+                if len(current_chunk) + len(question) + 1 <= 1000:
+                    current_chunk += question + "\n"
+                    if len(current_chunk) >= 600:
+                        content_list.append(current_chunk.strip())
+                        current_chunk = ''
+                else:
+                    if current_chunk:
+                        content_list.append(current_chunk.strip())
+                    current_chunk = question + "\n"
+                    while len(current_chunk) > 1000:
+                        content_list.append(current_chunk[:1000])
+                        current_chunk = current_chunk[1000:]
+            
+            if current_chunk:
+                content_list.append(current_chunk.strip())  
+        
+        content_list = book_tree[chapter]['content']
         chapter_content = chapter.content
         check = self._check_len(chapter_content)
-        content_list = book_tree[chapter]['content']
         
         if check == 'OK':
             content_list.append(chapter_content)
         elif check == 'LARGE':
-            sentences = self._split_sentences_general(chapter_content)
-            tmp_chunk = ''
-            while not sentences.empty():
-                sentence = sentences.get()
-                if 600 < len(tmp_chunk) + len(sentence) < 1000:
-                    tmp_chunk += sentence + "\n"
-                    content_list.append(tmp_chunk)
-                    tmp_chunk = ''
-                elif len(tmp_chunk) + len(sentence) < 600:
-                    tmp_chunk += sentence + "\n"
-                else:
-                    content_list.append(tmp_chunk[:1000])
-                    tmp_chunk = sentence + "\n"
-            
-            if tmp_chunk:
-                content_list.append(tmp_chunk)
-        else:  # SMALL
-            while not extra_questions.empty() and len(chapter_content) < 600:
-                chapter_content += "\n" + extra_questions.get()
-            
-            if len(chapter_content) > 1000:
-                content_list.append(chapter_content[:1000])
-                remaining = chapter_content[1000:]
-                if remaining:
-                    extra_questions.put(remaining)
-            else:
-                content_list.append(chapter_content)
-
-        if not extra_questions.empty() and content_list:
-            last_chunk = content_list[-1]
-            while not extra_questions.empty():
-                next_question = extra_questions.get()
-                combined_length = len(last_chunk) + len(next_question) + 1 
-                
-                if combined_length <= 1000:
-                    last_chunk += "\n" + next_question
-                    content_list[-1] = last_chunk 
-                else:
-                    extra_questions.put(next_question)
-                    break
-        tmp_chunk = ''
-        while not extra_questions.empty():
-            question = extra_questions.get()
-            if len(tmp_chunk) + len(question) + 1 <= 1000: 
-                tmp_chunk += question + "\n"
-                if len(tmp_chunk) >= 600:
-                    content_list.append(tmp_chunk.strip())
-                    tmp_chunk = ''
-            else:
-                if tmp_chunk:
-                    content_list.append(tmp_chunk.strip())
-                    tmp_chunk = question + "\n"
-                else:
-                    content_list.append(question[:1000])
-                    remaining = question[1000:]
-                    if remaining:
-                        extra_questions.put(remaining)
-        if tmp_chunk:
-            content_list.append(tmp_chunk.strip())
+            chunks = process_large_content(chapter_content)
+            content_list.extend(chunks)
+        else: 
+            small_chunks = process_small_content(chapter_content, extra_questions)
+            content_list.extend(small_chunks)
+        handle_extra_questions(extra_questions, content_list)
 
     def _initialize_chapter_structure(self, chapter):
         return {
@@ -175,15 +169,30 @@ class LumberChunker:
         if not parent_chapter.children:
             return
 
-        for child in parent_chapter.children:  # relative二级
-            self._classify_node(child, data_separate, parent_content_list)           
-            if child in data_separate['知识']:
-                parent_content_list.append({child:[]})
+        for child in parent_chapter.children:
+            child_dict = self._classify_node(child, data_separate, parent_content_list)
+            if child_dict is not None:
+                child_content = child.content
+                if len(child_content) < 600:
+                    parent_content_list = parent_content_list[:-1]
+                while len(child_content) > 1000:
+
+                    child_dict[child].append(child_content[:1000])
+                    child_content = child_content[1000:]
+                
+                if child_content:
+                    if len(child_content) > 600:
+                        child_dict[child].append(child_content)
+                        break
+                    else:
+                        break
+
 
     def _clean_question_content(self, question_content):
         return "\n".join([line for line in question_content.splitlines() if line.strip()])
 
-    def _chunk_all_nodes(self, chapter:dict, question_content_queue:queue.Queue, chapter_dict):
+    def _chunk_all_nodes(self, chapter, question_content_queue:queue.Queue, chapter_dict):
+
         check = self._check_len(chapter.content)
         if check == 'OK':
             chapter_dict[chapter].append(chapter.content)
@@ -217,7 +226,7 @@ class LumberChunker:
         max_iterations = 200
         iteration = 0
         
-        while not tmp_queue.empty() and iteration < max_iterations:
+        while (not tmp_queue.empty() and iteration < max_iterations): 
             sentence = tmp_queue.get()
             iteration += 1
             
@@ -296,11 +305,15 @@ class LumberChunker:
         
         if judge == '1':
             data_separate['知识'].append(ChapterNode)
-            parent_content_list.append({ChapterNode: []})
+            ChildChapterDict = {ChapterNode: []}
+            parent_content_list.append(ChildChapterDict)
+            return ChildChapterDict
 
         else:
             content = ChapterNode.content
             data_separate['题目'] += content
+            return None
+        
         
     def _check_len(self, chunk):
         length = len(chunk)
@@ -363,6 +376,7 @@ class LumberChunker:
             restored_sentences.put(sent)
 
         return restored_sentences
+
 
     def text_to_table(self, Chunked_book):
         data = []
@@ -438,18 +452,19 @@ class LumberChunker:
         df['Entity_self'] = Entity_list_self
 
         file_name_base = self.file_name
-        file_name_base = file_name_base.replace('.md', '')
 
-        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/'
+        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_data.csv'
+        
         df.to_csv(output_path, index=False)
 
         return df
 
-    def main(self):
+    def main1(self):
         Book = self.lumberchunker()
         Chunked_book = Book[0]
-        df = self.text_to_table(Chunked_book)
 
-        return Chunked_book, df
-
-Chunker = LumberChunker(BookTree)
+        return Chunked_book
+    
+    def mian2(self, book):
+        df = self.text_to_table(book)
+        return df
