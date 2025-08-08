@@ -1,18 +1,14 @@
-
 import re
-from Config.Settings import setting
-from PDF_to_MD.Check_File_Type import file_judge
-
 class Node:
     def __init__(self, title, level, parent=None):
         self.title = title 
         self.level = level
         self.content = ""
         self.children = []
-        self.parent = parent  # Add parent reference
+        self.parent = parent
     
     def add_child(self, node):
-        node.parent = self  # Set the parent when adding a child
+        node.parent = self
         self.children.append(node)
     
     def add_content(self, text):
@@ -22,8 +18,9 @@ class Node:
             self.content = text
 
 class MD_parser:
-    def __init__(self):
-        self.input_path = setting.Designer['Storage']['PDF_to_MD']['MD_file']
+    def __init__(self, md_content_path):
+        # setting.Designer['Storage']['PDF_to_MD']['MD_file']
+        self.input_path = md_content_path
         
     def parse_markdown_to_linked_lists(self):
         with open(self.input_path, 'r', encoding='utf-8') as f:
@@ -42,15 +39,12 @@ class MD_parser:
                 node = Node(title, level)
                 while stack and stack[-1].level >= level:
                     stack.pop()
-                if not stack:  # 根节点
+                if not stack:
                     roots.append(node)
-                else:  # 子节点
+                else:
                     stack[-1].add_child(node)
                 stack.append(node)
             else:
                 if stack: 
                     stack[-1].add_content(line)
         return roots
-
-Parser = MD_parser()
-BookTree = Parser.parse_markdown_to_linked_lists()
