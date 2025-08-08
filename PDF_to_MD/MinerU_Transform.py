@@ -1,11 +1,10 @@
 from Config.Settings import setting
-from PDF_to_MD.Check_File_Type import file_judge, file_name
 import os
 import time
 import requests
 
 class PDFProcessor:
-    def __init__(self):
+    def __init__(self, file_judge, file_name):
         self.token = setting.Designer['MinerU_Token']
         self.file_path = setting.USER['file_path']
         self.subject = setting.USER['subject']
@@ -110,5 +109,3 @@ class PDFProcessor:
 
         return mineru_zip_path
 
-processor = PDFProcessor()
-mineru_zip_path = processor.main()
