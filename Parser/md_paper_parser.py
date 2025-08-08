@@ -5,7 +5,6 @@ import requests
 import json
 from Config.Settings import setting
 from EntityLinking.Entity_Linking import Linking
-from PDF_to_MD.Check_File_Type import file_name
 from openai import OpenAI
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -13,8 +12,8 @@ import jieba
 # Input a question collection file
 
 class PaperParser:
-    def __init__(self):
-        self.paper_path = setting.Designer['Storage']['PDF_to_MD']['MD_file']
+    def __init__(self, md_content_path, file_name):
+        self.paper_path = md_content_path
         self.api_url = setting.Designer['DIFY']['DIFY_URL']
         self.api_key = setting.Designer['DIFY']['DIFY_ENG_Paper_Parser_API']
         self.subject = setting.USER['subject']
@@ -165,13 +164,9 @@ class PaperParser:
         with open(self.paper_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        #题干
         stems = []
-        #解析和答案
         answerAnalysis = []
-        #试题来源
         references=[]
-        #知识点
         knowledges=[]
         names=self.paper_path.split('/')
         names='/'.join(names[-3:-1])
@@ -332,9 +327,3 @@ class PaperParser:
         knowledge_list = knowledge_list.strip(', ')
 
         return knowledge_list
-    
-    
-paper_parser = PaperParser()
-ENG_parser = paper_parser.ENG_parser()
-Othertype_parser = paper_parser.GENERAL_parser()
-
