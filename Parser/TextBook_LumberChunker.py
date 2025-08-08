@@ -1,19 +1,18 @@
-from Parser.MD_section_parser import Node, BookTree
 from Config.Settings import setting
 from openai import OpenAI
 import pandas as pd
 from EntityLinking.Entity_Linking import Linking
-from PDF_to_MD.Check_File_Type import file_name
 import re
 import queue
 import spacy
+import os
 
 """
 最后要整理成df的形式
 """
 
 class LumberChunker:
-    def __init__(self, BookTree):
+    def __init__(self, BookTree, file_name):
         self.client = OpenAI(api_key = setting.Designer['DEEPSEEK']['API'], base_url="https://api.deepseek.com")
         self.nlp_Chi = spacy.load("zh_core_web_sm")
         self.nlp_Eng = spacy.load("en_core_web_sm")
@@ -451,20 +450,28 @@ class LumberChunker:
         df['Entity_father'] = Entity_list_father
         df['Entity_self'] = Entity_list_self
 
-        file_name_base = self.file_name
-
-        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_data.csv'
-        
-        df.to_csv(output_path, index=False)
-
         return df
 
     def main1(self):
         Book = self.lumberchunker()
-        Chunked_book = Book[0]
-
-        return Chunked_book
+        return Book
     
-    def mian2(self, book):
-        df = self.text_to_table(book)
+    def mian2(self, Books):
+        df_list = []
+        for book in Books:
+            key = book.keys()
+            if key.title == '目录':
+                continue
+            else:
+                df = self.text_to_table(book)
+                df_list.append(df)
+
+        df = pd.concat(df_list, axis=0)
+
+        file_name_base = self.file_name
+        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_data.csv'
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        
+        df.to_csv(output_path, index=False)
         return df
