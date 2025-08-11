@@ -93,6 +93,8 @@ class PDFProcessor:
         file_name_base = self.file_name
         file_name_base = file_name_base.replace('.pdf', '')
         save_path = f'{self.ouput_path_base}/{file_type}/{self.subject}/{file_name_base}.zip'
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
         try:
             response = requests.get(zip_url, stream=True)
             with open(save_path, 'wb') as f:
@@ -108,4 +110,3 @@ class PDFProcessor:
         mineru_zip_path = self.process_pdf()
 
         return mineru_zip_path
-
