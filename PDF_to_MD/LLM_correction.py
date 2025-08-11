@@ -179,8 +179,20 @@ class correction:
         for idx, sec in enumerate(result, 1):
             modified_md = self.correct_markdown_files(sec.strip(), md_content_path)
             corrected_md_file = corrected_md_file + '\n' + modified_md
+        lines = corrected_md_file.split('\n')
+        new_lines = []
+        in_target_section = False
+        for line in lines:
+            if line.startswith("## "):
+                in_target_section = True
+            elif line.startswith("【答案】"):
+                in_target_section = False
+            if in_target_section:
+                line = re.sub(r'(\(\d+\))', r'### \1', line)
+            new_lines.append(line)
+        result = '\n'.join(new_lines)
 
-        return corrected_md_file, md_content_path
+        return result, md_content_path
     
     def _process_index(self, text):
         book_structure = {}
