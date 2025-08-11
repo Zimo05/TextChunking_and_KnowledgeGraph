@@ -4,9 +4,9 @@ import requests
 import json
 import zipfile
 from typing import List
+import queue
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 
 class correction:
     def __init__(self, mineru_zip_path, file_name, file_judge):
@@ -27,9 +27,11 @@ class correction:
         with zipfile.ZipFile(self.mineru_zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_dir)
 
-        md_content_path = f'{extract_dir}/Updated_MD.md'
+        md_content_path = f'{extract_dir}/full.md'
         with open(md_content_path, 'r', encoding='utf-8') as f:
             content = f.read()
+
+        md_content_path = f'{extract_dir}/Updated_full.md'
 
         return content, md_content_path
     
@@ -59,31 +61,12 @@ class correction:
                 corrected_md_file, md_content_path = self._process_book()
             elif self.subject == 'MAT':
                 modified_content, md_content_path = self._process_math()
-                check = input('Please confirm if you need  really need LLM to correct this file (yes/no): ')
-                if check.lower() == 'yes':
-                    sections = modified_content.split('\n# ')
-                    for i in range(len(sections)):
-                        subsections = sections[i].split('\n## ') 
-                        for j in range(len(sections[i])):
-                            section = sections[i]
-                            chunk = section[j]
-                            if len(chunk) > 10000:
-                                text1 = chunk[:len(chunk)//2]
-                                text2 = chunk[len(chunk)//2:]
-                                text1 = self.correct_markdown_files(text1)
-                                text2 = self.correct_markdown_files(text2)
-                                section[i] = text1 + text2
-                        sections[i] = subsections
-                        restored_sections = []
-                        for section in sections:
-                            if isinstance(section, List):
-                                restored_subsection = '\n## '.join(section)
-                                restored_sections.append(restored_subsection)
-                            else:
-                                restored_sections.append(section)
-                        corrected_md_file = '\n# '.join(restored_sections)
-                        if modified_content.startswith('#'):
-                            corrected_md_file = '#' + corrected_md_file
+                corrected_md_file = self.implement_LLM_by_chunking(modified_content)
+
+            elif self.subject == 'PHY':
+                modified_content,  md_content_path = self._process_PHY()
+                corrected_md_file = self.implement_LLM_by_chunking(modified_content)
+
         else:
             corrected_md_file, md_content_path = self._process_paper(corrected_md_file)
 
@@ -91,6 +74,35 @@ class correction:
             file.write(corrected_md_file)
 
         return corrected_md_file, md_content_path
+    
+    def implement_LLM_by_chunking(self, modified_content):
+        check = input('Please confirm if you need  really need LLM to correct this file (yes/no): ')
+        if check.lower() == 'yes':
+            sections = modified_content.split('\n# ')
+            for i in range(len(sections)):
+                subsections = sections[i].split('\n## ') 
+                for j in range(len(sections[i])):
+                    section = sections[i]
+                    chunk = section[j]
+                    if len(chunk) > 10000:
+                        text1 = chunk[:len(chunk)//2]
+                        text2 = chunk[len(chunk)//2:]
+                        text1 = self.correct_markdown_files(text1)
+                        text2 = self.correct_markdown_files(text2)
+                        section[i] = text1 + text2
+                sections[i] = subsections
+                restored_sections = []
+                for section in sections:
+                    if isinstance(section, List):
+                        restored_subsection = '\n## '.join(section)
+                        restored_sections.append(restored_subsection)
+                    else:
+                        restored_sections.append(section)
+                corrected_md_file = '\n# '.join(restored_sections)
+                if modified_content.startswith('#'):
+                    corrected_md_file = '#' + corrected_md_file
+
+        return corrected_md_file
     
     def _process_book(self):      
         content, md_content_path = self.pre_processing()
@@ -172,61 +184,59 @@ class correction:
     
     def _process_index(self, text):
         book_structure = {}
-        prev_chapter_num = 0
-        chapter_pattern = re.compile(
-            r'^(?:#\s*)?(第[一二三四五六七八九十百千万\d]+(?:单元|章)\s*[^\n]+)(?:\s|$)',
-            re.MULTILINE
-        )
+        start_num = 0
+        
         def chinese_to_arabic(chinese_num):
             mapping = {'一':1, '二':2, '三':3, '四':4, '五':5,
                     '六':6, '七':7, '八':8, '九':9, '十':10, 
-                     '十一': 11, '十二':12, '十三':13 }
+                    '十一': 11, '十二':12, '十三':13}
             if chinese_num in mapping:
                 return mapping[chinese_num]
             try:
                 return int(chinese_num)
             except ValueError:
                 return 0
-        processed_text = re.sub(r'(第[\d一二三四五六七八九十百千万]+章)', r'\n\1', text)
-        chapter_matches = list(chapter_pattern.finditer(processed_text))
-        print(f"Found {len(chapter_matches)} chapter matches")
-        for i, match in enumerate(chapter_matches):
-            chapter_title = match.group(1).strip()
-            print(f"Processing chapter: {chapter_title}")
-            chapter_num_match = re.search(r'第([一二三四五六七八九十百千万\d]+)(?:单元|章)', chapter_title)
-            if chapter_num_match:
-                chapter_num_str = chapter_num_match.group(1)
-                chapter_num = chinese_to_arabic(chapter_num_str)
-            else:
-                chapter_num = prev_chapter_num + 1
-            if chapter_num <= prev_chapter_num:
+                
+        chapter_pattern = re.compile(r'# 第(.*?)(章|单元)')
+        index_text = text[:len(text)//20]
+        line_queue = queue.Queue()
+        for line in index_text.split('\n'):
+            line_queue.put(line.strip())
+        while not line_queue.empty():
+            line = line_queue.get()
+            if '目录' in line:
                 break
-            prev_chapter_num = chapter_num
-            start_pos = match.end()
-            end_pos = chapter_matches[i+1].start() if i+1 < len(chapter_matches) else len(processed_text)
-            chapter_content = processed_text[start_pos:end_pos].strip()
-            lines = [
-                line.strip() 
-                for line in chapter_content.split('\n') 
-                if line.strip() and not line.strip().startswith('![')
-            ]
-            copy_lines = []
-            for entry in lines:
-                if len(entry) < 30:
-                    copy_lines.append(entry)
-            book_structure[chapter_title] = copy_lines
-        if book_structure:
-            last_chapter = list(book_structure.keys())[-1]
-            last_content = book_structure[last_chapter][-1]
-            last_content_pos = processed_text.rfind(last_content)
-            if last_content_pos != -1:
-                last_char_pos = last_content_pos + len(last_content)
-            else:
-                last_char_pos = len(processed_text)
-        else:
-            last_char_pos = len(processed_text)
-        left_book = text[last_char_pos-5:]
-
+        
+        current_chapter = None
+        
+        while not line_queue.empty():
+            line = line_queue.get().strip()
+            if not line:
+                continue
+            chapter_match = re.search(chapter_pattern, line)
+            if chapter_match:
+                series = chapter_match.group(1)
+                try:
+                    series_num = int(series)
+                except ValueError:
+                    series_num = chinese_to_arabic(series)
+                
+                if series_num > start_num:
+                    current_chapter = line
+                    book_structure[current_chapter] = []
+                    start_num = series_num
+                elif series_num < start_num:
+                    break
+            elif current_chapter:
+                if line.startswith('#'):
+                    break
+                book_structure[current_chapter].append(line)
+        last_chapter = list(book_structure.keys())[-1]
+        last_chapter = list(book_structure.keys())[-1]
+        last_session = book_structure[last_chapter][-1]
+        last_content_pos = text.rfind(last_session)
+        last_char_pos = last_content_pos + len(last_session)
+        left_book = text[last_char_pos:]
         return book_structure, left_book
 
     def _process_math(self):
@@ -357,4 +367,44 @@ class correction:
                     new_lines.append(f"#### {line.replace('#', '')}")
             return '\n'.join(new_lines)
 
+        return modified_content, md_content_path
+    
+    def _process_PHY(self):
+        text, md_content_path = self.pre_processing()
+        text = text.replace('# 人民教育出版社', '')
+        book_structure, left_book = self._process_index(text)
+        left_book = left_book.replace('# \n', '')
+        chapter = []
+        session = []
+        for key, value in book_structure.items():
+            chapter.append(key)
+            session.extend(value)
+        vectorizer = TfidfVectorizer(analyzer='char')
+        lesson_vectors = vectorizer.fit_transform(session)
+        lines = left_book.split('\n')
+        new_lines = []
+        for line in lines:
+            line = line.strip()
+            if not line.startswith('#'):
+                new_lines.append(line)
+                continue
+            if '第' in line and '章' in line:
+                    new_lines.append(line)
+                    continue
+            if session:
+                line_vector = vectorizer.transform([line])
+                similarities = cosine_similarity(line_vector, lesson_vectors)
+                max_sim = similarities.max()
+                max_index = similarities.argmax()
+
+                if max_sim > 0.5:
+                    matched_lesson = session[max_index]
+                    if matched_lesson in session:
+                        new_line = f"## {line.replace('#', '')}"
+                        new_lines.append(new_line)
+                        continue
+
+                new_lines.append(f"### {line.replace('#', '')}")
+        
+        modified_content = '\n'.join(new_lines)
         return modified_content, md_content_path
