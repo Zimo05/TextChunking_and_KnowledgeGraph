@@ -1,7 +1,7 @@
 import json
 class Implement:
 
-    def Question_Generate():
+    def Question_Generate(self):
         # 出题助手：Input subject(s)
         knowledge_options = ['语文(CHI)', '数学(MAT)', '英语(ENG)', '物理(PHY)', 
                             '化学(CHM)', '生物(BIO)', '政治(POL)', '历史(HIS)', '地理(GEO)']
@@ -19,13 +19,13 @@ class Implement:
         
         # Dealing with muktiple subjects(出题助手, 对接章哥)
 
-    def Corpus_Search():
+    def Corpus_Search(self):
         # Search for corpus(ES Importer)
         return
 
 
 
-    def Knowlwdge_Graph():
+    def Knowlwdge_Graph(self):
         # Input subject
         knowledge_options = ['语文(CHI)', '数学(MAT)', '英语(ENG)', '物理(PHY)', 
                             '化学(CHM)', '生物(BIO)', '政治(POL)', '历史(HIS)', '地理(GEO)']
@@ -76,3 +76,6 @@ class Implement:
         Chunked_df = parser.invoke_parser()
         
         return corrected_md, Chunked_df
+    
+implementation = Implement()
+KG = implementation.Knowlwdge_Graph()
