@@ -1,8 +1,4 @@
 import json
-from openai import OpenAI
-
-# 知识图谱助手：
-# 出题助手： 单个科目，直接问什么知识点的什么题型，多科目问什么学科的什么知识点的什么题型
 class Implement:
 
     def Question_Generate():
@@ -44,7 +40,7 @@ class Implement:
         from Config.Settings import setting
         setting.USER['subject'] = subject_code
         # Storage path
-        setting.USER['file_path'] = input('Please enter your file path: ').strip("'\"") #'./Data/Original/教材/高中数学必修第一册A版/高中数学必修第一册A版.md'
+        setting.USER['file_path'] = input('Please enter your file path(Drag the file into the terminal): ').strip("'\"") #'./Data/Original/教材/高中数学必修第一册A版/高中数学必修第一册A版.md'
 
         from PDF_to_MD.Check_File_Type import CheckFileType
         check = CheckFileType()
