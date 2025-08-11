@@ -1,17 +1,17 @@
 # TextChunking_and_KnowledgeGraph
 
-## MinerU configuration(GPU version):
+## MinerU configuration:
 1. Inside the TextChunking_and_KnowledgeGraph folder, pull the MinerU repositpry
    - git clone https://github.com/opendatalab/MinerU.git
-2. Create a virtual environment, run the requirement.txt
-3. **Confugure torch and torchvision:**
+2. **Create a virtual environment, run the requirement.txt**
+3. **(GPU version)Confugure torch and torchvision:**
     - link:
        - https://download.pytorch.org/whl/torchvision, **using torch2.7.1 + cu128, and choose the sepcific python version**
        - https://download.pytorch.org/whl/torch, **using torchvision0.22.1 + cu128, and choose the sepcific python version**
-
-## Dify configuration(for MinerU):
+4. **(API version)Confugure:** Apply MinerU API om the official website: https://mineru.net/apiManage
+## Dify configuration:
 1. MinerU FastApi: mineru-api --host 127.0.0.1 --port \<port number\>
-2. Inside dify: import 
+2. import all pml file
 
 ## USING Guidance:
 1. Designer:
