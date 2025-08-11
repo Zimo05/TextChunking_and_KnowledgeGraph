@@ -3,6 +3,7 @@ from Config.Settings import setting
 import requests
 import json
 import zipfile
+from typing import List
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -58,8 +59,31 @@ class correction:
                 corrected_md_file, md_content_path = self._process_book()
             elif self.subject == 'MAT':
                 modified_content, md_content_path = self._process_math()
-                
-
+                check = input('Please confirm if you need  really need LLM to correct this file (yes/no): ')
+                if check.lower() == 'yes':
+                    sections = modified_content.split('\n# ')
+                    for i in range(len(sections)):
+                        subsections = sections[i].split('\n## ') 
+                        for j in range(len(sections[i])):
+                            section = sections[i]
+                            chunk = section[j]
+                            if len(chunk) > 10000:
+                                text1 = chunk[:len(chunk)//2]
+                                text2 = chunk[len(chunk)//2:]
+                                text1 = self.correct_markdown_files(text1)
+                                text2 = self.correct_markdown_files(text2)
+                                section[i] = text1 + text2
+                        sections[i] = subsections
+                        restored_sections = []
+                        for section in sections:
+                            if isinstance(section, List):
+                                restored_subsection = '\n## '.join(section)
+                                restored_sections.append(restored_subsection)
+                            else:
+                                restored_sections.append(section)
+                        corrected_md_file = '\n# '.join(restored_sections)
+                        if modified_content.startswith('#'):
+                            corrected_md_file = '#' + corrected_md_file
         else:
             corrected_md_file, md_content_path = self._process_paper(corrected_md_file)
 
@@ -334,6 +358,3 @@ class correction:
             return '\n'.join(new_lines)
 
         return modified_content, md_content_path
-    
-correction = correction()
-content, md_content_path = correction.main()
