@@ -1,4 +1,7 @@
 # TextChunking_and_KnowledgeGraph
+This program is used to chunk textbook and papers and then structurize them into a DAG using neo4j, we silmutaneously conbine the data you input with knowledge instance offered by THU.
+- for Textbook: we chunked the textbook into -> text content chunks with length between 600 and 1000, title to which it belongs and parent title to which it belongs, knowledge instance, relationships
+- for Papers: we chunked the Papers into -> question, answer and analysis, knowledge
 
 ## MinerU configuration:
 1. Inside the TextChunking_and_KnowledgeGraph folder, pull the MinerU repositpry
@@ -11,7 +14,7 @@
 4. **(API version)Confugure:** Apply MinerU API om the official website: https://mineru.net/apiManage
 ## Dify configuration:
 1. MinerU FastApi: mineru-api --host 127.0.0.1 --port \<port number\>
-2. import all pml file
+2. import all yml file
 
 ## USING Guidance:
 1. Designer:
@@ -20,11 +23,7 @@
 2. User:
 - Open the UserImplementation folder to run the UserCommand.py
 - follow the guidance to complete the file uploading and Configure settings
+- **For input data**:
+     - If you are using this to chunk English questions, do not input English paper, because this chunking program of English is specialized for chunking “阅读理解， 完形填空， 语法填空， 七选五”，and please name the file as the question type within.
+     - For input papers: you are recommended to input papers with answer and analysis.
  
-## 使用指南： 
-1. 后台:
-   - 打开Config.Settings设置修改dify， neo4j和elastic搜索API密钥和个人设置
-   - 根据需要更新输入和输出数据路径 
-3. 用户:
-   - 打开“UserImplementation”文件夹，运行“UserCommand.py”
-   - 根据界面提示完成文件上传和配置
