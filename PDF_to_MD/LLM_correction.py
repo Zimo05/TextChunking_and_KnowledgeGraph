@@ -183,7 +183,7 @@ class correction:
         for line in lines:
             if line.startswith("## "):
                 in_target_section = True
-            elif line.startswith("【答案】"):
+            elif line.startswith("【"):
                 in_target_section = False
             if in_target_section:
                 line = re.sub(r'(\(\d+\))', r'### \1', line)
