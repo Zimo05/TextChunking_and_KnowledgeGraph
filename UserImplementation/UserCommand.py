@@ -1,4 +1,3 @@
-import json
 class Implement:
 
     def Question_Generate(self):
@@ -22,8 +21,6 @@ class Implement:
     def Corpus_Search(self):
         # Search for corpus(ES Importer)
         return
-
-
 
     def Knowlwdge_Graph(self):
         # Input subject
@@ -54,28 +51,27 @@ class Implement:
         from PDF_to_MD.LLM_correction import correction
         Correction = correction(mineru_zip_path, file_name, file_judge)
         corrected_md, md_content_path = Correction.pre_processing()
-        while True:
-            check = input(f"""Please go to the "{md_content_path}" to double check the index.
-                          The proper format should be: 
-                                                1. 1 title occupy one row
-                                                2. # Only at the front of the ‘第...章’
-                          If ok, please enter ok. If not revise it, then enter ok""")
-            with open(md_content_path, 'r') as f:
-                corrected_md = f.read()
-            if check.lower() == 'ok':
-                break
-            else:
-                print("Ensure you've check the markdown file, enter 'ok'")
+        if file_judge['file_type'] == 'Book':
+            while True:
+                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                            The proper format should be: 
+                                                    1. 1 title occupy one row
+                                                    2. # Only at the front of the ‘第...章’
+                            If ok, please enter ok. If not revise it, then enter ok: """)
+                with open(md_content_path, 'r') as f:
+                    corrected_md = f.read()
+                if check.lower() == 'ok':
+                    break
+                else:
+                    print("Ensure you've check the markdown file, enter 'ok': ")
         corrected_md, md_content_path = Correction.main()
+        print('Revision complete!')
 
         from Parser.Invoke_Parser import InvokeParser
-        from Parser.MD_section_parser import MD_parser, Node
-        Parser = MD_parser(md_content_path)
-        BookTree = Parser.parse_markdown_to_linked_lists()
-        parser = InvokeParser(BookTree, md_content_path, file_name, file_judge)
+        parser = InvokeParser(md_content_path, file_name, file_judge)
         Chunked_df = parser.invoke_parser()
         
-        return corrected_md, Chunked_df
+        return Chunked_df
     
-implementation = Implement()
-KG = implementation.Knowlwdge_Graph()
+Implementation = Implement()
+Chunked_df = Implementation.Knowlwdge_Graph()
