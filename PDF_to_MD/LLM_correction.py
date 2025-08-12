@@ -189,21 +189,29 @@ class correction:
         if self.subject in ['MAT', 'PHY', 'CHM']:
             check = input('Please confirm if you really need LLM to correct this file (yes/no): ')
             if check == 'yes':
-                sections = re.split(r'(# [一二三四五六七八九十]+、)', result)
                 print('Begin to revise...')
-                for i in range(len(sections)):
-                    if len(sections[i]) > 100:
-                        sec = sections[i]
-                        modified_md = self.correct_markdown_files(sec.strip())
-                        print(f'Chunk{i} complete')
-                        pattern = r'```markdown(.*?)```'
-                        matches = re.findall(pattern, modified_md, re.DOTALL)
-                        content_list = [match.strip() for match in matches]
-                        if content_list:
-                            modified_md = content_list[0]
-                            corrected_md_file = corrected_md_file + '\n' + modified_md
+                parts = re.split(r'(\n##\s)', result)
+                chunks = []
+                temp = ''
+                for part in parts:
+                    if part.startswith('\n## '):  # 新标题出现
+                        if temp:
+                            chunks.append(temp.strip())
+                        temp = part.lstrip('\n')  # 去掉开头换行
                     else:
-                        corrected_md_file += sections[i]
+                        temp += part
+                if temp:
+                    chunks.append(temp.strip())
+
+                for i in range(len(chunks)):
+                    modified_md = self.correct_markdown_files(chunks[i])
+                    print(f'Chunk{i} complete')
+                    pattern = r'```markdown(.*?)```'
+                    matches = re.findall(pattern, modified_md, re.DOTALL)
+                    content_list = [match.strip() for match in matches]
+                    if content_list:
+                        modified_md = content_list[0]
+                        corrected_md_file = corrected_md_file + '\n' + modified_md
             else:
                 corrected_md_file = result
             
@@ -435,4 +443,3 @@ class correction:
         
         modified_content = '\n'.join(new_lines)
         return modified_content, md_content_path
-
