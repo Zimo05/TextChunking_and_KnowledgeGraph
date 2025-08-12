@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import requests
 import json
+import os
 from Config.Settings import setting
 from EntityLinking.Entity_Linking import Linking
 from openai import OpenAI
@@ -18,7 +19,7 @@ class PaperParser:
         self.api_key = setting.Designer['DIFY']['DIFY_ENG_Paper_Parser_API']
         self.subject = setting.USER['subject']
         self.output_path_base = setting.Designer['Storage']['Parser']['Chunked_paper']
-        self.file_name = file_name
+        self.file_name = file_name.replace('.pdf', '')
         self.client = OpenAI(api_key=setting.Designer['DEEPSEEK']['API'], base_url="https://api.deepseek.com")
         self.question_knowledge = {
             '阅读理解':['细节理解题', '主旨大意题', '推理判断题', '词义猜测题'],
@@ -147,61 +148,64 @@ class PaperParser:
                 knowledge_list = [item.strip() for item in row.split(",")]
                 entity_list = []
                 for item in knowledge_list:
-                    entity = Linking.link_question_with_entity(item)
-                    entity_list.append(entity)
+                    try:
+                        entity = Linking.link_question_with_entity(item)
+                        entity_list.append(entity)
+                    except Exception as e:
+                        entity_list.append(None)
 
                 all_entities.append(', '.join(entity_list))
             
 
             df['entity'] = all_entities
         
-        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/'
+        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df.csv'
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         df.to_csv(output_path, index=False)
+
         return df   
 
     def GENERAL_parser(self):
 
         with open(self.paper_path, 'r', encoding='utf-8') as f:
             content = f.read()
-
-        stems = []
-        answerAnalysis = []
-        references=[]
+        
         knowledges=[]
-        names=self.paper_path.split('/')
-        names='/'.join(names[-3:-1])
-        zhentis=content.split('###')[1:]
 
-        for item in tqdm(zhentis):
-            if "【答案】" in item:
-                # print(f"答案:{item}")
-                tmp = item.split("【答案】")
-                stems.append(tmp[0])
-                answerAnalysis.append(tmp[1])
-            elif "【解答】" in item:
-                # print(f"解析:{item}")
-                tmp = item.split("【解答】")
-                # print(f"tmp:{tmp}")
-                stems.append(tmp[0])
-                answerAnalysis.append(tmp[1])
-            elif "【解析】" in item:
-                # print(f"解析:{item}")
-                tmp = item.split("【解析】")
-                # print(f"tmp:{tmp}")
-                stems.append(tmp[0])
-                answerAnalysis.append(tmp[1])
-            else: 
-                print(f"没有答案和解析:{item}")
-            references.append(names)
-            knowledges.append(Linking.link_question_with_entity(item))
-
+        pattern = re.compile(r'## (.*?)【答案】', re.S)
+        pattern_ans = re.compile(r'【答案】(.*?)(?=##|$)', re.S)
+        questions = pattern.findall(content)
+        answers = pattern_ans.findall(content)
+        
+        for question in questions:
+            try:
+                knowledge = Linking.link_question_with_entity(question)
+                knowledges.append(knowledge)
+            except Exception as e:
+                knowledges.append(None)
+                continue
         df=pd.DataFrame()
-        df["questions"]=stems
-        df["analysis"]=answerAnalysis
-        df["references"]=references
+        df["questions"]=questions
+        df["analysis"]=answers
         df["knowledges"]=knowledges
 
-        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/'
+        for ind, row in df.iterrows():
+            if row['knowledges'] == None:
+                question = row['questions']
+                chinese_chars = re.findall(r'[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]', question)
+                question = ''.join(chinese_chars)
+                try:
+                    knowledge = Linking.link_question_with_entity(question)
+                except Exception as e:
+                    continue
+            else:
+                continue 
+        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df.csv'
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         df.to_csv(output_path, index=False)
 
         return df
@@ -327,3 +331,4 @@ class PaperParser:
         knowledge_list = knowledge_list.strip(', ')
 
         return knowledge_list
+
