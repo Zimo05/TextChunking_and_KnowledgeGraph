@@ -31,7 +31,7 @@ class correction:
         with open(md_content_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        md_content_path = f'{extract_dir}/Updated_full.md'
+        md_content_path = f'{extract_dir}/full.md'
 
         return content, md_content_path
     
@@ -61,12 +61,19 @@ class correction:
                 corrected_md_file, md_content_path = self._process_book()
             elif self.subject == 'MAT':
                 modified_content, md_content_path = self._process_math()
-                corrected_md_file = self.implement_LLM_by_chunking(modified_content)
+                check = input('Please confirm if you really need LLM to correct this file (yes/no): ')
+                if check.lower() == 'yes':
+                    corrected_md_file = self.implement_LLM_by_chunking(modified_content)
+                else:
+                    corrected_md_file = modified_content
 
             elif self.subject == 'PHY':
                 modified_content,  md_content_path = self._process_PHY()
-                corrected_md_file = self.implement_LLM_by_chunking(modified_content)
-
+                check = input('Please confirm if you really need LLM to correct this file (yes/no): ')
+                if check.lower() == 'yes':
+                    corrected_md_file = self.implement_LLM_by_chunking(modified_content)
+                else:
+                    corrected_md_file = modified_content
         else:
             corrected_md_file, md_content_path = self._process_paper(corrected_md_file)
 
@@ -76,31 +83,29 @@ class correction:
         return corrected_md_file, md_content_path
     
     def implement_LLM_by_chunking(self, modified_content):
-        check = input('Please confirm if you need  really need LLM to correct this file (yes/no): ')
-        if check.lower() == 'yes':
-            sections = modified_content.split('\n# ')
-            for i in range(len(sections)):
-                subsections = sections[i].split('\n## ') 
-                for j in range(len(sections[i])):
-                    section = sections[i]
-                    chunk = section[j]
-                    if len(chunk) > 10000:
-                        text1 = chunk[:len(chunk)//2]
-                        text2 = chunk[len(chunk)//2:]
-                        text1 = self.correct_markdown_files(text1)
-                        text2 = self.correct_markdown_files(text2)
-                        section[i] = text1 + text2
-                sections[i] = subsections
-                restored_sections = []
-                for section in sections:
-                    if isinstance(section, List):
-                        restored_subsection = '\n## '.join(section)
-                        restored_sections.append(restored_subsection)
-                    else:
-                        restored_sections.append(section)
-                corrected_md_file = '\n# '.join(restored_sections)
-                if modified_content.startswith('#'):
-                    corrected_md_file = '#' + corrected_md_file
+        sections = modified_content.split('\n# ')
+        for i in range(len(sections)):
+            subsections = sections[i].split('\n## ') 
+            for j in range(len(sections[i])):
+                section = sections[i]
+                chunk = section[j]
+                if len(chunk) > 10000:
+                    text1 = chunk[:len(chunk)//2]
+                    text2 = chunk[len(chunk)//2:]
+                    text1 = self.correct_markdown_files(text1)
+                    text2 = self.correct_markdown_files(text2)
+                    section[i] = text1 + text2
+            sections[i] = subsections
+            restored_sections = []
+            for section in sections:
+                if isinstance(section, List):
+                    restored_subsection = '\n## '.join(section)
+                    restored_sections.append(restored_subsection)
+                else:
+                    restored_sections.append(section)
+            corrected_md_file = '\n# '.join(restored_sections)
+            if modified_content.startswith('#'):
+                corrected_md_file = '#' + corrected_md_file
 
         return corrected_md_file
     
@@ -161,25 +166,14 @@ class correction:
     def _process_paper(self, corrected_md_file):
 
         content, md_content_path = self.pre_processing()
+        content = content.replace('# [', '')
         content = content.replace('．', '.')
         content = content.replace('（', '(')
         content = content.replace('）', ')')
         
         processed_text = re.sub(r'(\d+\.)(\S)', r'\1 \2', content)
         processed_text = re.sub(r'^(\d+\.)', r'## \1', processed_text, flags=re.MULTILINE)
-
-        sections = re.split(r'(# [一二三四五六七八九十]+、)', processed_text)
-
-        result = []
-        for i in range(0, len(sections), 2):
-            if i + 1 < len(sections):
-                result.append(sections[i] + sections[i+1])
-            else:
-                result.append(sections[i])
-        for idx, sec in enumerate(result, 1):
-            modified_md = self.correct_markdown_files(sec.strip(), md_content_path)
-            corrected_md_file = corrected_md_file + '\n' + modified_md
-        lines = corrected_md_file.split('\n')
+        lines = processed_text.split('\n')
         new_lines = []
         in_target_section = False
         for line in lines:
@@ -191,8 +185,29 @@ class correction:
                 line = re.sub(r'(\(\d+\))', r'### \1', line)
             new_lines.append(line)
         result = '\n'.join(new_lines)
-
-        return result, md_content_path
+        
+        if self.subject in ['MAT', 'PHY', 'CHM']:
+            check = input('Please confirm if you really need LLM to correct this file (yes/no): ')
+            if check == 'yes':
+                sections = re.split(r'(# [一二三四五六七八九十]+、)', result)
+                print('Begin to revise...')
+                for i in range(len(sections)):
+                    if len(sections[i]) > 100:
+                        sec = sections[i]
+                        modified_md = self.correct_markdown_files(sec.strip())
+                        print(f'Chunk{i} complete')
+                        pattern = r'```markdown(.*?)```'
+                        matches = re.findall(pattern, modified_md, re.DOTALL)
+                        content_list = [match.strip() for match in matches]
+                        if content_list:
+                            modified_md = content_list[0]
+                            corrected_md_file = corrected_md_file + '\n' + modified_md
+                    else:
+                        corrected_md_file += sections[i]
+            else:
+                corrected_md_file = result
+            
+        return corrected_md_file, md_content_path
     
     def _process_index(self, text):
         book_structure = {}
@@ -420,3 +435,4 @@ class correction:
         
         modified_content = '\n'.join(new_lines)
         return modified_content, md_content_path
+
