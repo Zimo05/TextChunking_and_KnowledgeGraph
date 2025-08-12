@@ -20,3 +20,7 @@ This program is used to chunk textbook and papers and then structurize them into
      - If you are using this to chunk English questions, do not input English paper, because this chunking program of English is specialized for chunking “阅读理解， 完形填空， 语法填空， 七选五”，and please name the file as the question type within.
      - For input papers: you are recommended to input papers with answer and analysis.
  
+
+Acknowledgement:
+1. Thanks for **[MinerU](https://github.com/opendatalab/MinerU)** for offering fundamental pdf transformation tool.
+2. Thanks for **[DeepSeek](https://github.com/deepseek-ai)** for offering advanced AI models and open-source resources.
