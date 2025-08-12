@@ -75,7 +75,7 @@ class correction:
                 else:
                     corrected_md_file = modified_content
         else:
-            corrected_md_file, md_content_path = self._process_paper(corrected_md_file)
+            corrected_md_file, md_content_path = self._process_paper()
 
         with open(md_content_path, 'w', encoding='utf-8') as file:
             file.write(corrected_md_file)
