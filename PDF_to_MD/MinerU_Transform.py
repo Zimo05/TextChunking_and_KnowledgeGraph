@@ -90,20 +90,31 @@ class PDFProcessor:
 
     def download_result(self, zip_url):
         file_type = self.file_judge['file_type']
-        file_name_base = self.file_name
-        file_name_base = file_name_base.replace('.pdf', '')
-        save_path = f'{self.ouput_path_base}/{file_type}/{self.subject}/{file_name_base}.zip'
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
+        file_name_base = self.file_name.replace('.pdf', '')
+        output_dir = os.path.join(self.ouput_path_base, file_type, self.subject)
+        os.makedirs(output_dir, exist_ok=True) 
+        save_path = os.path.join(output_dir, f"{file_name_base}.zip")
+        
         try:
             response = requests.get(zip_url, stream=True)
+            if os.path.isdir(save_path):
+                raise IsADirectoryError(f"目标路径是目录而不是文件: {save_path}")
             with open(save_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8190):
-                    f.write(chunk)
-
+                for chunk in response.iter_content(chunk_size=8192): 
+                    if chunk:
+                        f.write(chunk)
+            
+            print(f"File has downloaded to: {save_path}")
             return save_path
+            
+        except requests.exceptions.RequestException as e:
+            print(f'Download fail: {e}')
+            if os.path.exists(save_path):
+                os.remove(save_path)
+            return None
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'发生意外错误: {e}')
+            return None
 
     def main(self):
         self.upload_file()
