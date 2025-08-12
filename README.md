@@ -21,6 +21,8 @@ This program is used to chunk textbook and papers and then structurize them into
      - For input papers: you are recommended to input papers with answer and analysis.
  
 
+
+
 Acknowledgement:
 1. Thanks for **[MinerU](https://github.com/opendatalab/MinerU)** for offering fundamental pdf transformation tool.
 2. Thanks for **[DeepSeek](https://github.com/deepseek-ai)** for offering advanced AI models and open-source resources.
