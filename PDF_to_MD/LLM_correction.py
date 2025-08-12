@@ -163,8 +163,8 @@ class correction:
         modified_text = '\n'.join(modified_lines)
         return modified_text, md_content_path
     
-    def _process_paper(self, corrected_md_file):
-
+    def _process_paper(self):
+        corrected_md_file_list = []
         content, md_content_path = self.pre_processing()
         content = content.replace('# [', '')
         content = content.replace('．', '.')
@@ -210,8 +210,8 @@ class correction:
                     matches = re.findall(pattern, modified_md, re.DOTALL)
                     content_list = [match.strip() for match in matches]
                     if content_list:
-                        modified_md = content_list[0]
-                        corrected_md_file = corrected_md_file + '\n' + modified_md
+                        corrected_md_file_list.extend(content_list)
+                corrected_md_file = '\n'.join(corrected_md_file_list)
             else:
                 corrected_md_file = result
             
