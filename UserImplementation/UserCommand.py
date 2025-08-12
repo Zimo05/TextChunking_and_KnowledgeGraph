@@ -64,6 +64,17 @@ class Implement:
                     break
                 else:
                     print("Ensure you've check the markdown file, enter 'ok': ")
+        else:
+            while True:
+                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                            The proper index format should be: 'num. ', eg: ‘1. ’
+                            If ok, please enter ok. If not revise it, then enter ok: """)
+                with open(md_content_path, 'r') as f:
+                    corrected_md = f.read()
+                if check.lower() == 'ok':
+                    break
+                else:
+                    print("Ensure you've check the markdown file, enter 'ok': ")
         corrected_md, md_content_path = Correction.main()
         print('Revision complete!')
 
@@ -73,5 +84,5 @@ class Implement:
         
         return Chunked_df
     
-Implementation = Implement()
-Chunked_df = Implementation.Knowlwdge_Graph()
+implementation = Implement()
+Chunked_df = implementation.Knowlwdge_Graph()
