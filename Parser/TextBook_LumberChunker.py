@@ -5,6 +5,7 @@ from EntityLinking.Entity_Linking import Linking
 import re
 import queue
 import spacy
+from Parser.MD_section_parser import Node
 import os
 
 """
@@ -456,7 +457,7 @@ class LumberChunker:
         Book = self.lumberchunker()
         return Book
     
-    def mian2(self, Books):
+    def main2(self, Books):
         df_list = []
         for book in Books:
             key = book.keys()
@@ -469,9 +470,9 @@ class LumberChunker:
         df = pd.concat(df_list, axis=0)
 
         file_name_base = self.file_name
-        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_data.csv'
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-        
+        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_df.csv'
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         df.to_csv(output_path, index=False)
         return df
