@@ -111,6 +111,8 @@ class correction:
     
     def _process_book(self):      
         content, md_content_path = self.pre_processing()
+        with open(md_content_path, 'r', encoding='utf-8') as f:
+            content = f.read()
         content = content.replace('# 人民教育出版社', '')
         book_structure, left_content = self._process_index(content)
         lesson_titles = []
@@ -166,6 +168,8 @@ class correction:
     def _process_paper(self):
         corrected_md_file_list = []
         content, md_content_path = self.pre_processing()
+        with open(md_content_path, 'r', encoding='utf-8') as f:
+            content = f.read()
         content = content.replace('# [', '')
         content = content.replace('．', '.')
         content = content.replace('（', '(')
@@ -276,6 +280,8 @@ class correction:
 
     def _process_math(self):
         text, md_content_path = self.pre_processing()
+        with open(md_content_path, 'r', encoding='utf-8') as f:
+            text = f.read()
         text = text.replace('# 人民教育出版社', '')
         text = text.replace('．', '.')
         def extract_chapters(text):
@@ -406,6 +412,8 @@ class correction:
     
     def _process_PHY(self):
         text, md_content_path = self.pre_processing()
+        with open(md_content_path, 'r', encoding='utf-8') as f:
+            text = f.read()
         text = text.replace('# 人民教育出版社', '')
         book_structure, left_book = self._process_index(text)
         left_book = left_book.replace('# \n', '')
