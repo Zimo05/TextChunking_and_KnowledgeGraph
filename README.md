@@ -6,7 +6,7 @@ This program is used to chunk textbook and papers and then structurize them into
 ## MinerU configuration:
 1. Inside the TextChunking_and_KnowledgeGraph folder, pull the MinerU repositpry
    - git clone https://github.com/opendatalab/MinerU.git
-2. **Create a virtual environment, run the requirement.txt**
+2. **Create a virtual environment, run the requirement.txt：** pip install -r requirements.txt
 3. **(API version)Confugure:** Apply MinerU API om the official website: https://mineru.net/apiManage
 
 ## USING Guidance:
