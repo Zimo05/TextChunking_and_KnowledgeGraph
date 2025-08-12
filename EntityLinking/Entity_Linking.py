@@ -1,9 +1,6 @@
-import os
 import pandas as pd
 import requests
 import json
-import re
-import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -13,7 +10,6 @@ from Config.Settings import setting
 class EntityLinking:
     def __init__(self):
         self.edukg_instance = setting.Designer['Entity_linking']['Edukg_instance_info']
-        self.KD_index = setting.Designer['Entity_linking']['Entity_level_index']
         self.subject = setting.USER['subject']
         self.SUBJECT_MAPPING = {
                                     'CHI': '语文',
@@ -86,7 +82,7 @@ class EntityLinking:
             },
             "user": self.user
         }
-        response = requests.post(self.api_url, headers=headers, json=request_data, timeout=30)
+        response = requests.post(self.api_url, headers=headers, json=request_data)
         response_text = response.text
         response_json = json.loads(response_text)
         response_text = response.text
@@ -124,7 +120,7 @@ class EntityLinking:
             },
             "user": self.user
         }
-        response = requests.post(self.api_url, headers=headers, json=request_data, timeout=30)
+        response = requests.post(self.api_url, headers=headers, json=request_data, timeout=100)
         response_text = response.text
         response_json = json.loads(response_text)
         output = response_json['data']['outputs']['knowledge']
