@@ -132,9 +132,12 @@ workflow:
           role: user
           text: '请分析以下文本{{#1755048992052.Question#}}，里面有很多组题目，一组题目包含了题干的短文材料和问题及选项，我需要你给我返回每道题目的题干短文材料的第一句话(原文怎么写的你就这么返回，不要改动)，用json格式，每句话放进[]里
 
+            格式：
 
-            '
-        selected: false
+            {''text'':[ ... ]
+
+            }'
+        selected: true
         title: LLM
         type: llm
         variables: []
