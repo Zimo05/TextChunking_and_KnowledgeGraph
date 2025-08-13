@@ -51,36 +51,19 @@ class Implement:
         from PDF_to_MD.LLM_correction import correction
         Correction = correction(mineru_zip_path, file_name, file_judge)
         corrected_md, md_content_path = Correction.pre_processing()
-        if file_judge['file_type'] == 'Book':
-            while True:
-                check = input(f"""Please go to the "{md_content_path}" to double check the index.
-                            The proper format should be: 
-                                                    1. 1 title occupy one row
-                                                    2. # Only at the front of the ‘第...章’
-                            If ok, please enter ok. If not revise it, then enter ok: """)
-                with open(md_content_path, 'r') as f:
-                    corrected_md = f.read()
-                if check.lower() == 'ok':
-                    break
-                else:
-                    print("Ensure you've check the markdown file, enter 'ok': ")
-        else:
-            while True:
-                check = input(f"""Please go to the "{md_content_path}" to double check the index.
-                            The proper index format should be: 'num. ', eg: ‘1. ’
-                            If ok, please enter ok. If not revise it, then enter ok: """)
-                with open(md_content_path, 'r') as f:
-                    corrected_md = f.read()
-                if check.lower() == 'ok':
-                    break
-                else:
-                    print("Ensure you've check the markdown file, enter 'ok': ")
         corrected_md, md_content_path = Correction.main()
         print('Revision complete!')
 
         from Parser.Invoke_Parser import InvokeParser
         parser = InvokeParser(md_content_path, file_name, file_judge)
         Chunked_df = parser.invoke_parser()
+
+        from Parser.MD_section_parser import MD_parser
+        Parser = MD_parser(md_content_path)
+        BookTree = Parser.parse_markdown_to_linked_lists()
+        from Parser.Chunking_TextBook_Questions import TextBookQuestion
+        Chunker = TextBookQuestion(BookTree, file_name, file_judge)
+        TBQ_df = Chunker.Question_Chunking()
         
         return Chunked_df
     
