@@ -157,7 +157,6 @@ class PaperParser:
                         entity_list.append(None)
 
                 all_entities.append(', '.join(entity_list))
-            
 
             df['entity'] = all_entities
         
@@ -258,23 +257,40 @@ class PaperParser:
 
             for question in questions:
                 knowledge_list = []
-                quests = question.split('### ')
-                for quest in quests:
+                if '###' in question:
+                    quests = question.split('### ')
+                    for quest in quests:
+                        try:
+                            knowledge = Linking.link_question_with_entity(quest)
+                            knowledge_list.append(knowledge)
+                        except Exception as e:
+                            knowledge_list.append('None')
+                            continue
+                else:
                     try:
-                        knowledge = Linking.link_question_with_entity(quest)
-                        knowledge_list.append(knowledge)
+                            knowledge = Linking.link_question_with_entity(quest)
+                            knowledge_list.append(knowledge)
                     except Exception as e:
                         knowledge_list.append('None')
                         continue
-
-            knowledge_str = ', '.join(knowledge_list)
-            knowledge_collection.append(knowledge_str)
-
+                knowledge_str = ', '.join(knowledge_list)
+                knowledge_collection.append(knowledge_str)
         question_collection.extend(questions)
         answer_collection.extend(answers)
 
         df = pd.DataFrame()
+        max_len = max(len(question_collection), len(answer_collection), len(knowledge_collection))
 
+        if len(question_collection) < max_len:
+            question_collection.extend([None] * (max_len - len(question_collection)))
+        if len(answer_collection) < max_len:
+            answer_collection.extend([None] * (max_len - len(answer_collection)))
+        if len(knowledge_collection) < max_len:
+            knowledge_collection.extend([None] * (max_len - len(knowledge_collection)))
+
+        assert len(question_collection) == len(answer_collection) == len(knowledge_collection), \
+            "列表长度仍不一致，请在输出文件夹内检查数据！"
+        
         df['questions'] = question_collection
         df['answer and analysis'] = answer_collection
         df['knowledge'] = knowledge_collection
