@@ -15,8 +15,10 @@ import jieba
 class PaperParser:
     def __init__(self, md_content_path, file_name):
         self.paper_path = md_content_path
+        self.dify_user = setting.Designer['DIFY']['DIFY_USER']
         self.api_url = setting.Designer['DIFY']['DIFY_URL']
         self.api_key = setting.Designer['DIFY']['DIFY_ENG_Paper_Parser_API']
+        self.geo_api_key = setting.Designer['DIFY']['DIFY_GEO_Paper_Parser_API']
         self.subject = setting.USER['subject']
         self.output_path_base = setting.Designer['Storage']['Parser']['Chunked_paper']
         self.file_name = file_name.replace('.pdf', '')
@@ -165,10 +167,115 @@ class PaperParser:
             os.makedirs(output_dir)
         df.to_csv(output_path, index=False)
 
-        return df   
+        return df 
 
+    def GEO_parser(self):
+        def dify_structuring(question_chunk):
+            headers = {
+                "Authorization": f"Bearer {self.geo_api_key}",
+                "Content-Type": 'application/json'
+            }
+            request_data = {
+                "inputs": {
+                    "Question": question_chunk, 
+                },
+                "user": self.dify_user
+            }
+            response = requests.post('http://localhost/v1/workflows/run', headers=headers, json=request_data)
+            response_text = response.text
+            response_json = json.loads(response_text)
+            output = response_json["data"]["outputs"]
+            raw_str = output['Structure']
+            cleaned_str = re.sub(r'`json|\`', '', raw_str)
+            cleaned_str = cleaned_str.strip()
+            data = json.loads(cleaned_str)
+            print(data) 
+            return data
+        
+        with open(self.paper_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        text = text.replace('．', '. ')
+        text = text.replace('，', ', ')
+        new_text = re.sub(r'^(\d+\.\s)', r'## \1', text, flags=re.MULTILINE)
+        sections = re.split(r'^#\s+[一二三四五六七八九十、]+.*$', new_text, flags=re.MULTILINE)
+
+        question_collection = []
+        answer_collection = []
+        knowledge_collection = []
+
+        choice_question = []
+        index_set = []
+        choice_questions = []
+        for sec in sections[1:]:
+            if '#' not in sec[:20]:
+                choice_question.append(sec)
+        for question in choice_question:
+            structure = dify_structuring(question)
+        structure = structure['text']
+        for question in choice_question:
+            pattern = re.escape(question[10:]) 
+            match = re.search(pattern, new_text)
+            if match:
+                end_index = match.end() - 1
+            for set in structure:
+                pattern = re.escape(set[:10]) 
+                match = re.search(pattern, new_text)
+                if match:
+                    start_index = match.start()
+                    index_set.append(start_index)
+            for i in range(len(index_set)):
+                start = index_set[i]
+                try:
+                    end = index_set[i + 1]
+                    que = new_text[start:end]
+                    choice_questions.append(que)
+                except Exception as e:
+                    que = new_text[start:end_index]
+                    choice_questions.append(que)
+
+        for quest in choice_questions:
+            before, sep, after = quest.partition("【答案】")
+            question = before
+            answer = sep + after
+            question_collection.append(question)
+            answer_collection.append(answer)
+
+            knowledge_list = []
+            small_questions = question.split('## ')
+            for char in small_questions[1:]:
+                knowledge = Linking.link_question_with_entity(char)
+                knowledge_list.append(knowledge)
+            knowledge_str = ', '.join(knowledge_list)
+            knowledge_collection.append(knowledge_str)
+
+        written_questions = []
+        for sec in sections[1:]:
+            if '#' in sec[:25]:
+                written_questions.append(sec)
+        for question in written_questions:
+            pattern = re.compile(r'## (.*?)【答案】', re.S)
+            pattern_ans = re.compile(r'【答案】(.*?)(?=##|$)', re.S)
+            questions = pattern.findall(question)
+            answers = pattern_ans.findall(question)
+
+        question_collection.extend(questions)
+        answer_collection.extend(answers)
+
+        df = pd.DataFrame()
+
+        df['questions'] = question_collection
+        df['answer and analysis'] = answer_collection
+        df['knowledge'] = knowledge_collection
+
+        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df.csv'
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        df.to_csv(output_path, index=False)
+
+        return df
+        
     def GENERAL_parser(self):
-
         with open(self.paper_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
@@ -219,9 +326,9 @@ class PaperParser:
             "inputs": {
                 "Paper": question_chunk, 
             },
-            "user": "Zimo"
+            "user": self.dify_user
         }
-        response = requests.post(self.api_url, headers=headers, json=request_data, timeout=30)
+        response = requests.post(self.api_url, headers=headers, json=request_data, timeout=150)
         response_text = response.text
         response_json = json.loads(response_text)
         output = response_json["data"]["outputs"]
