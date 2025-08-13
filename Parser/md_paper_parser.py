@@ -196,8 +196,8 @@ class PaperParser:
             text = f.read()
         text = text.replace('．', '. ')
         text = text.replace('，', ', ')
-        new_text = re.sub(r'^(\d+\.\s)', r'## \1', text, flags=re.MULTILINE)
-        sections = re.split(r'^#\s+[一二三四五六七八九十、]+.*$', new_text, flags=re.MULTILINE)
+        text = text.replace('.', '. ')
+        sections = re.split(r'^#\s+[一二三四五六七八九十、]+.*$', text, flags=re.MULTILINE)
 
         question_collection = []
         answer_collection = []
@@ -214,12 +214,12 @@ class PaperParser:
         structure = structure['text']
         for question in choice_question:
             pattern = re.escape(question[10:]) 
-            match = re.search(pattern, new_text)
+            match = re.search(pattern, text)
             if match:
                 end_index = match.end() - 1
             for set in structure:
                 pattern = re.escape(set[:10]) 
-                match = re.search(pattern, new_text)
+                match = re.search(pattern, text)
                 if match:
                     start_index = match.start()
                     index_set.append(start_index)
@@ -227,19 +227,17 @@ class PaperParser:
                 start = index_set[i]
                 try:
                     end = index_set[i + 1]
-                    que = new_text[start:end]
+                    que = text[start:end]
                     choice_questions.append(que)
                 except Exception as e:
-                    que = new_text[start:end_index]
+                    que = text[start:end_index]
                     choice_questions.append(que)
-
         for quest in choice_questions:
             before, sep, after = quest.partition("【答案】")
             question = before
             answer = sep + after
             question_collection.append(question)
             answer_collection.append(answer)
-
             knowledge_list = []
             small_questions = question.split('## ')
             for char in small_questions[1:]:
@@ -257,6 +255,16 @@ class PaperParser:
             pattern_ans = re.compile(r'【答案】(.*?)(?=##|$)', re.S)
             questions = pattern.findall(question)
             answers = pattern_ans.findall(question)
+
+            for question in questions:
+                knowledge_list = []
+                quests = question.split('### ')
+                for quest in quests:
+                    knowledge = Linking.link_question_with_entity(quest)
+                    knowledge_list.append(knowledge)
+
+            knowledge_str = ', '.join(knowledge_list)
+            knowledge_collection.append(knowledge_str)
 
         question_collection.extend(questions)
         answer_collection.extend(answers)
