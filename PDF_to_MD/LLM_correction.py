@@ -111,6 +111,18 @@ class correction:
     
     def _process_book(self):      
         content, md_content_path = self.pre_processing()
+        while True:
+                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                            The proper format should be: 
+                                                    1. 1 title occupy one row
+                                                    2. # Only at the front of the ‘第...章’
+                            If ok, please enter ok. If not revise it, then enter ok: """)
+                with open(md_content_path, 'r') as f:
+                    corrected_md = f.read()
+                if check.lower() == 'ok':
+                    break
+                else:
+                    print("Ensure you've check the markdown file, enter 'ok': ")
         with open(md_content_path, 'r', encoding='utf-8') as f:
             content = f.read()
         content = content.replace('# 人民教育出版社', '')
@@ -168,12 +180,24 @@ class correction:
     def _process_paper(self):
         corrected_md_file_list = []
         content, md_content_path = self.pre_processing()
+        while True:
+                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                            The proper index format should be: 'num. ', eg: ‘1. ’
+                            If ok, please enter ok. If not revise it, then enter ok: """)
+                with open(md_content_path, 'r') as f:
+                    corrected_md = f.read()
+                if check.lower() == 'ok':
+                    break
+                else:
+                    print("Ensure you've check the markdown file, enter 'ok': ")
+
         with open(md_content_path, 'r', encoding='utf-8') as f:
             content = f.read()
         content = content.replace('# [', '')
         content = content.replace('．', '.')
         content = content.replace('（', '(')
         content = content.replace('）', ')')
+        content = content.replace('.', '. ')
         
         processed_text = re.sub(r'(\d+\.)(\S)', r'\1 \2', content)
         processed_text = re.sub(r'^(\d+\.)', r'## \1', processed_text, flags=re.MULTILINE)
@@ -218,7 +242,9 @@ class correction:
                 corrected_md_file = '\n'.join(corrected_md_file_list)
             else:
                 corrected_md_file = result
-            
+        else:
+            corrected_md_file = result
+
         return corrected_md_file, md_content_path
     
     def _process_index(self, text):
@@ -280,6 +306,18 @@ class correction:
 
     def _process_math(self):
         text, md_content_path = self.pre_processing()
+        while True:
+                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                            The proper format should be: 
+                                                    1. 1 title occupy one row
+                                                    2. # Only at the front of the ‘第...章’
+                            If ok, please enter ok. If not revise it, then enter ok: """)
+                with open(md_content_path, 'r') as f:
+                    corrected_md = f.read()
+                if check.lower() == 'ok':
+                    break
+                else:
+                    print("Ensure you've check the markdown file, enter 'ok': ")
         with open(md_content_path, 'r', encoding='utf-8') as f:
             text = f.read()
         text = text.replace('# 人民教育出版社', '')
@@ -412,6 +450,18 @@ class correction:
     
     def _process_PHY(self):
         text, md_content_path = self.pre_processing()
+        while True:
+                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                            The proper format should be: 
+                                                    1. 1 title occupy one row
+                                                    2. # Only at the front of the ‘第...章’
+                            If ok, please enter ok. If not revise it, then enter ok: """)
+                with open(md_content_path, 'r') as f:
+                    corrected_md = f.read()
+                if check.lower() == 'ok':
+                    break
+                else:
+                    print("Ensure you've check the markdown file, enter 'ok': ")
         with open(md_content_path, 'r', encoding='utf-8') as f:
             text = f.read()
         text = text.replace('# 人民教育出版社', '')
