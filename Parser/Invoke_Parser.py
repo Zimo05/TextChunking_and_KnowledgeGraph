@@ -1,11 +1,13 @@
 from Parser.TextBook_LumberChunker import LumberChunker
 from Parser.md_paper_parser import PaperParser
+from Config.Settings import setting
 
 class InvokeParser:
     def __init__(self, md_content_path, file_name, file_judge):
         self.file_judge = file_judge
         self.file_name = file_name
         self.md_content_path = md_content_path
+        self.subject = setting.USER['subject']
 
     def invoke_parser(self):
         if self.file_judge['file_type'] == 'Book':
@@ -23,6 +25,9 @@ class InvokeParser:
             if self.file_judge['is ENG']:
                 # 英语
                 paper_df = paper_parser.ENG_parser()
+                return None, paper_df
+            elif self.subject == 'GEO':
+                paper_df = paper_parser.GEO_parser()
                 return None, paper_df
             else:
                 paper_df = paper_parser.GENERAL_parser()
