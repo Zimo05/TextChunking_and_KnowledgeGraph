@@ -260,8 +260,12 @@ class PaperParser:
                 knowledge_list = []
                 quests = question.split('### ')
                 for quest in quests:
-                    knowledge = Linking.link_question_with_entity(quest)
-                    knowledge_list.append(knowledge)
+                    try:
+                        knowledge = Linking.link_question_with_entity(quest)
+                        knowledge_list.append(knowledge)
+                    except Exception as e:
+                        knowledge_list.append('None')
+                        continue
 
             knowledge_str = ', '.join(knowledge_list)
             knowledge_collection.append(knowledge_str)
@@ -313,6 +317,7 @@ class PaperParser:
                 question = ''.join(chinese_chars)
                 try:
                     knowledge = Linking.link_question_with_entity(question)
+                    row['knowledges'] = knowledge
                 except Exception as e:
                     continue
             else:
