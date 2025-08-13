@@ -5,6 +5,8 @@ class settings:
             'DIFY_Entity_Linking_API': '',
             'DIFY_Entity_Book_Linking_API': '',
             'DIFY_Correction_API': '',
+            'DIFY_GEO_Paper_Parser_API': '',
+            'DIFY_TextBook_Question_Answer': '',
             'DIFY_URL': "http://localhost/v1/workflows/run",
             'DIFY_USER': ''
             },
