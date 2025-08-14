@@ -448,10 +448,12 @@ class LumberChunker:
                 Entity_list_father.append(Linking.link_book_with_entity(parent))
             except Exception as e:
                 Entity_list_father.append('None')
+                continue
             try:
                 Entity_list_self.append(Linking.link_book_with_entity(itself))
             except Exception as e:
                 Entity_list_father.append('None')
+                continue
             
         df['Entity_father'] = Entity_list_father
         df['Entity_self'] = Entity_list_self
