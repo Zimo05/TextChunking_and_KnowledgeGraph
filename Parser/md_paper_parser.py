@@ -1,4 +1,3 @@
-import tqdm
 import re
 import pandas as pd
 import requests
@@ -155,6 +154,8 @@ class PaperParser:
                         entity_list.append(entity)
                     except Exception as e:
                         entity_list.append(None)
+                        continue
+
 
                 all_entities.append(', '.join(entity_list))
 
@@ -180,7 +181,7 @@ class PaperParser:
                 },
                 "user": self.dify_user
             }
-            response = requests.post('http://localhost/v1/workflows/run', headers=headers, json=request_data)
+            response = requests.post(self.api_url, headers=headers, json=request_data)
             response_text = response.text
             response_json = json.loads(response_text)
             output = response_json["data"]["outputs"]
@@ -188,7 +189,6 @@ class PaperParser:
             cleaned_str = re.sub(r'`json|\`', '', raw_str)
             cleaned_str = cleaned_str.strip()
             data = json.loads(cleaned_str)
-            print(data) 
             return data
         
         with open(self.paper_path, 'r', encoding='utf-8') as f:
@@ -240,8 +240,12 @@ class PaperParser:
             knowledge_list = []
             small_questions = question.split('## ')
             for char in small_questions[1:]:
-                knowledge = Linking.link_question_with_entity(char)
-                knowledge_list.append(knowledge)
+                try:
+                    knowledge = Linking.link_question_with_entity(char)
+                    knowledge_list.append(knowledge)
+                except Exception as e:
+                    knowledge_list.append('None')
+                    continue
             knowledge_str = ', '.join(knowledge_list)
             knowledge_collection.append(knowledge_str)
 
