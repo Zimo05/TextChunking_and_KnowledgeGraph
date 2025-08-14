@@ -10,18 +10,16 @@ This program is used to chunk textbook and papers and then structurize them into
 3. **(API version)Confugure:** Apply MinerU API om the official website: https://mineru.net/apiManage
 
 ## USING Guidance:
-1. Designer:
 - Open the Config.Settings to modify the dify, neo4j and elastic search API key and personal settings
 - Update the input and output data paths as needed
-2. User:
 - Open the UserImplementation folder to run the UserCommand.py
 - follow the guidance to complete the file uploading and Configure settings
 - **For input data**:
-     - If you are using this to chunk English questions, do not input English paper, because this chunking program of English is specialized for chunking “阅读理解， 完形填空， 语法填空， 七选五”，and please name the file as the question type within.
-     - For input papers: you are recommended to input papers with answer and analysis.
+     - For textbook: No specific requirement
+     - For papers: Only special requirements for English, **Do not input a paper, Only one pdf of collection of question type within \['阅读理解', '完形填空', '语法填空'， '七选五'\] is acceptible**
  
-
-
+- Lastly, follow the guidance within the Follow the instructions during code execution
+ 
 
 Acknowledgement:
 1. Thanks for **[MinerU](https://github.com/opendatalab/MinerU)** for offering fundamental pdf transformation tool.
