@@ -37,46 +37,52 @@ class TextBookQuestion:
         for chapter, node_list in chapter_questions.items():
             for node in node_list:
                 content = node.content
-            translation_table = str.maketrans({
-                '．': '. ',
-                '（': '(',
-                '）': ')',
-                '.': '. ',
-                '\n\n': '\n'
-            })
-            content = content.translate(translation_table)
-            sections = re.split(r'\d+\.\s*', content)
-            Question = []
-            Answers = []
-            Analyses = []
-            Knowledge = []
-            Source = []
-            Subject = []
 
-            for section in sections:
-                answer, analysis = self.Dify_structuring(section)
-                try:
-                    knowledge = Linking.link_question_with_entity(section)
-                except Exception as e:
+                translation_table = str.maketrans({
+                    '．': '.',
+                    '（': '(',
+                    '）': ')',
+                })
+                content = content.translate(translation_table)
+                replacements = {
+                    '.': '. ', 
+                    '\n\n': '\n'
+                }
+                for old, new in replacements.items():
+                    content = content.replace(old, new)
+                    sections = re.split(r'\d+\.\s*', content)
+
+                Question = []
+                Answers = []
+                Analyses = []
+                Knowledge = []
+                Source = []
+                Subject = []
+
+                for section in sections:
+                    answer, analysis = self.Dify_structuring(section)
                     try:
                         knowledge = Linking.link_question_with_entity(section)
                     except Exception as e:
-                        knowledge = 'None'
-                        continue
-                Answers.append(answer)
-                Analyses.append(analysis)
-                Knowledge.append(knowledge)
-                Question.append(section)
-                Source.append(chapter.title)
-                Subject.append(self.subject)
-            
-            df = pd.DataFrame()
-            df['question'] = Question
-            df['answer'] = Answers
-            df['analysis'] = Analyses
-            df['knowledge'] = Knowledge
-            df['source'] = Source
-            df['subject'] = Subject
+                        try:
+                            knowledge = Linking.link_question_with_entity(section)
+                        except Exception as e:
+                            knowledge = 'None'
+                            continue
+                    Answers.append(answer)
+                    Analyses.append(analysis)
+                    Knowledge.append(knowledge)
+                    Question.append(section)
+                    Source.append(chapter.title)
+                    Subject.append(self.subject)
+                
+                df = pd.DataFrame()
+                df['question'] = Question
+                df['answer'] = Answers
+                df['analysis'] = Analyses
+                df['knowledge'] = Knowledge
+                df['source'] = Source
+                df['subject'] = Subject
 
             df_list.append(df)
 
@@ -114,3 +120,4 @@ class TextBookQuestion:
         analysis = data['解析']
 
         return answer, analysis
+    
