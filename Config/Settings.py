@@ -2,7 +2,7 @@ class settings:
     Designer = {
         'DIFY': {
             'DIFY_ENG_Paper_Parser_API': '',
-            'DIFY_Entity_Linking_API': '',
+            'DIFY_Entity_Linking_API': '',  # link questions with entity
             'DIFY_Entity_Book_Linking_API': '',
             'DIFY_Correction_API': '',
             'DIFY_GEO_Paper_Parser_API': '',
