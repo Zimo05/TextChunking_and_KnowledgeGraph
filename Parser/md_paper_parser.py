@@ -161,7 +161,7 @@ class PaperParser:
 
             df['entity'] = all_entities
         
-        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df.csv'
+        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df_{self.file_name}.csv'
         output_dir = os.path.dirname(output_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -299,7 +299,7 @@ class PaperParser:
         df['answer and analysis'] = answer_collection
         df['knowledge'] = knowledge_collection
 
-        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df.csv'
+        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df_{self.file_name}.csv'
         output_dir = os.path.dirname(output_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -342,7 +342,7 @@ class PaperParser:
                     continue
             else:
                 continue 
-        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df.csv'
+        output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df_{self.file_name}.csv'
         output_dir = os.path.dirname(output_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
