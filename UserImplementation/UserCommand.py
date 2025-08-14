@@ -62,7 +62,7 @@ class Implement:
         Parser = MD_parser(md_content_path)
         BookTree = Parser.parse_markdown_to_linked_lists()
         from Parser.Chunking_TextBook_Questions import TextBookQuestion
-        Chunker = TextBookQuestion(BookTree, file_name, file_judge)
+        Chunker = TextBookQuestion(BookTree, file_name)
         TBQ_df = Chunker.Question_Chunking()
         
         return Chunked_df
