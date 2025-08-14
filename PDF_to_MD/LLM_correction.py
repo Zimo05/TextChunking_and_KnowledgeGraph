@@ -126,6 +126,7 @@ class correction:
         with open(md_content_path, 'r', encoding='utf-8') as f:
             content = f.read()
         content = content.replace('# 人民教育出版社', '')
+        content = content.replace('人民教育出版社', '')
         book_structure, left_content = self._process_index(content)
         lesson_titles = []
         for key, value in book_structure.items():
