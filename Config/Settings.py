@@ -30,8 +30,8 @@ class settings:
                                     # then you only need to fill ./Data/MarkdownFile in this position!!!
                 },
                 'Parser':{
-                    'Chunked_paper':'', eg: ./Data/Updated/Papers
-                    'Chunked_book': '' eg: ./Data/Updated/TextBooks
+                    'Chunked_paper':'', # eg: ./Data/Updated/Papers
+                    'Chunked_book': '' # eg: ./Data/Updated/TextBooks
                 },            
             },
         'Entity_linking':{
