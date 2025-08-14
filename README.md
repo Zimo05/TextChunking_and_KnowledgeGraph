@@ -18,7 +18,7 @@ This program is used to chunk textbook and papers and then structurize them into
      - For textbook: No specific requirement
      - For papers: Only special requirements for English, **Do not input a paper, Only one pdf of collection of question type within \['阅读理解', '完形填空', '语法填空'， '七选五'\] is acceptable**
  
-- Lastly, follow the guidance within the Follow the instructions during code execution
+- Lastly, follow the guidance within the instructions during code execution
  
 
 Acknowledgement:
