@@ -477,7 +477,7 @@ class LumberChunker:
         df = pd.concat(df_list, axis=0)
 
         file_name_base = self.file_name
-        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_df.csv'
+        output_path = f'{self.output_path_base}/{self.subject}/{file_name_base}/chunked_df_{file_name_base}.csv'
         output_dir = os.path.dirname(output_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
