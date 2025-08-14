@@ -444,9 +444,14 @@ class LumberChunker:
         for ind, row in df.iterrows():
             parent = row['parent']
             itself = row['chapter_title']
-
-            Entity_list_father.append(Linking.link_book_with_entity(parent))
-            Entity_list_self.append(Linking.link_book_with_entity(itself))
+            try:
+                Entity_list_father.append(Linking.link_book_with_entity(parent))
+            except Exception as e:
+                Entity_list_father.append('None')
+            try:
+                Entity_list_self.append(Linking.link_book_with_entity(itself))
+            except Exception as e:
+                Entity_list_father.append('None')
             
         df['Entity_father'] = Entity_list_father
         df['Entity_self'] = Entity_list_self
