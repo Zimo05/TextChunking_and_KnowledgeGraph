@@ -112,7 +112,7 @@ class correction:
     def _process_book(self):      
         content, md_content_path = self.pre_processing()
         while True:
-                check = input(f"""Please go to the "{md_content_path}" to double check the index.
+                check = input(f"""Please go to the "{md_content_path}" to double check the index(目录).
                             The proper format should be: 
                                                     1. 1 title occupy one row
                                                     2. # Only at the front of the ‘第...章’
@@ -182,8 +182,10 @@ class correction:
         corrected_md_file_list = []
         content, md_content_path = self.pre_processing()
         while True:
-                check = input(f"""Please go to the "{md_content_path}" to double check the index.
-                            The proper index format should be: 'num. ', eg: ‘1. ’
+                check = input(f"""Please go to the "{md_content_path}" to double check the index（目录）.
+                            The proper index format should be:
+                                                        1. 'num. ', eg: ‘1. ’
+                                                        2. # only between 一、二、三、四、
                             If ok, please enter ok. If not revise it, then enter ok: """)
                 with open(md_content_path, 'r') as f:
                     corrected_md = f.read()
@@ -379,6 +381,7 @@ class correction:
             if current_chapter:
                 chapters.append(current_chapter)
             return chapters
+        
         result = extract_chapters(text)
         chapter_info = group_by_chapter(result)
         lesson_list = []
@@ -388,66 +391,67 @@ class correction:
         last_content_pos = text.rfind(last_content)
         last_char_pos = last_content_pos + len(last_content)
         left_content = text[last_char_pos:]
-        modified_content = adjust_headings(left_content, chapter_info)
-
-        def adjust_headings(left_content, chapter_info):
-            left_content = left_content.replace('# \n', '')
-            level1_lessons = []
-            level2_lessons = []
-            special_lessons = []
-            for chapter in chapter_info:
-                for lesson in chapter[1:]:
-                    if re.match(r'^\d+\.\d+\.\d+', lesson): 
-                        level2_lessons.append(lesson)
-                    elif re.match(r'^\d+\.\d+', lesson):
-                        level1_lessons.append(lesson)
-                    elif '小结' in lesson or '复习' in lesson:
-                        special_lessons.append(lesson)
-            vectorizer = TfidfVectorizer(analyzer='char')
-            all_lessons = level1_lessons + level2_lessons + special_lessons
-            if all_lessons: 
-                lesson_vectors = vectorizer.fit_transform(all_lessons)
-            lines = left_content.split('\n')
-            new_lines = []
-            for line in lines:
-                line = line.strip()
-                if not line.startswith('#'):
-                    new_lines.append(line)
-                    continue
-                if '第' in line and '章' in line:
-                    new_lines.append(line)
-                    continue
-                is_special = False
-                if ('小结' or '复习') in line:
-                    is_special = True
-                if is_special:
-                    new_lines.append(f"## {line.replace('#', '')}")
-                    continue
-                if all_lessons:
-                    line_vector = vectorizer.transform([line])
-                    similarities = cosine_similarity(line_vector, lesson_vectors)
-                    max_sim = similarities.max()
-                    max_index = similarities.argmax()
-                    
-                    if max_sim > 0.5:
-                        matched_lesson = all_lessons[max_index]
-                        if matched_lesson in level2_lessons:
-                            new_line = f"### {line.replace('#', '')}"
-                        elif matched_lesson in level1_lessons:
-                            new_line = f"## {line.replace('#', '')}"
-                        else:
-                            new_line = f"## {line.replace('#', '')}" 
-                        if re.search(r'^\d+\.\d+\.\d+', new_line.replace('#', '').strip()):
-                            new_line = f"### {line.replace('#', '')}"
-                        new_lines.append(new_line)
-                        continue
-                    if re.search(r'^\d+\.\d+\.\d+', line):
-                        new_lines.append(f"### {line.replace('#', '')}")
-                        continue
-                    new_lines.append(f"#### {line.replace('#', '')}")
-            return '\n'.join(new_lines)
+        modified_content = self.adjust_headings(left_content, chapter_info)
 
         return modified_content, md_content_path
+
+    def adjust_headings(self, left_content, chapter_info):
+        left_content = left_content.replace('# \n', '')
+        level1_lessons = []
+        level2_lessons = []
+        special_lessons = []
+        for chapter in chapter_info:
+            for lesson in chapter[1:]:
+                if re.match(r'^\d+\.\d+\.\d+', lesson): 
+                    level2_lessons.append(lesson)
+                elif re.match(r'^\d+\.\d+', lesson):
+                    level1_lessons.append(lesson)
+                elif '小结' in lesson or '复习' in lesson:
+                    special_lessons.append(lesson)
+        vectorizer = TfidfVectorizer(analyzer='char')
+        all_lessons = level1_lessons + level2_lessons + special_lessons
+        if all_lessons: 
+            lesson_vectors = vectorizer.fit_transform(all_lessons)
+        lines = left_content.split('\n')
+        new_lines = []
+        for line in lines:
+            line = line.strip()
+            if not line.startswith('#'):
+                new_lines.append(line)
+                continue
+            if '第' in line and '章' in line:
+                new_lines.append(line)
+                continue
+            is_special = False
+            if ('小结' or '复习') in line:
+                is_special = True
+            if is_special:
+                new_lines.append(f"## {line.replace('#', '')}")
+                continue
+            if all_lessons:
+                line_vector = vectorizer.transform([line])
+                similarities = cosine_similarity(line_vector, lesson_vectors)
+                max_sim = similarities.max()
+                max_index = similarities.argmax()
+                
+                if max_sim > 0.5:
+                    matched_lesson = all_lessons[max_index]
+                    if matched_lesson in level2_lessons:
+                        new_line = f"### {line.replace('#', '')}"
+                    elif matched_lesson in level1_lessons:
+                        new_line = f"## {line.replace('#', '')}"
+                    else:
+                        new_line = f"## {line.replace('#', '')}" 
+                    if re.search(r'^\d+\.\d+\.\d+', new_line.replace('#', '').strip()):
+                        new_line = f"### {line.replace('#', '')}"
+                    new_lines.append(new_line)
+                    continue
+                if re.search(r'^\d+\.\d+\.\d+', line):
+                    new_lines.append(f"### {line.replace('#', '')}")
+                    continue
+                new_lines.append(f"#### {line.replace('#', '')}")
+        return '\n'.join(new_lines)
+
     
     def _process_PHY(self):
         text, md_content_path = self.pre_processing()
