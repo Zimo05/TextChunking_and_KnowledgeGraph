@@ -88,7 +88,7 @@ class TextBookQuestion:
 
         combined_df = pd.concat(df_list, ignore_index=True)
 
-        output_path = f'{self.file_path_base}/{self.subject}/{self.file_name}/chunked_book_question_df.csv'
+        output_path = f'{self.file_path_base}/{self.subject}/{self.file_name}/chunked_{self.file_name}_question_df.csv'
         output_dir = os.path.dirname(output_path)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
