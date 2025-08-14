@@ -24,6 +24,30 @@ class Implement:
 
     def Knowlwdge_Graph(self):
         # Input subject
+        from Config.Settings import setting
+
+        while True:
+            check = input("""Please go to the setting page to configure the following:
+                        1. DIFY_ENG_Paper_Parser_API
+                        2. DIFY_Entity_Linking_API
+                        3. DIFY_Entity_Book_Linking_API
+                        4. DIFY_Correction_API
+                        5. DIFY_GEO_Paper_Parser_API
+                        6. DIFY_TextBook_Question_Answer
+                        7. DIFY_USER
+                        8. MinerU_Token
+                        9. MD_file
+                        10. Chunked_paper
+                        11. Chunked_book
+              
+              If all done, enter ok
+              """)
+            if check == 'ok':
+                break
+            else:
+                print('Invalid input')
+                continue
+
         knowledge_options = ['语文(CHI)', '数学(MAT)', '英语(ENG)', '物理(PHY)', 
                             '化学(CHM)', '生物(BIO)', '政治(POL)', '历史(HIS)', '地理(GEO)']
         
@@ -34,7 +58,7 @@ class Implement:
         choice = input("Please choose: ").strip()
         selected_subject = knowledge_options[int(choice)-1]
         subject_code = selected_subject.split('(')[1].split(')')[0]
-        from Config.Settings import setting
+        
         setting.USER['subject'] = subject_code
         # Storage path
         setting.USER['file_path'] = input('Please enter your file path(Drag the file into the terminal): ').strip("'\"") #'./Data/Original/教材/高中数学必修第一册A版/高中数学必修第一册A版.md'
@@ -58,13 +82,16 @@ class Implement:
         parser = InvokeParser(md_content_path, file_name, file_judge)
         Chunked_df = parser.invoke_parser()
 
-        from Parser.MD_section_parser import MD_parser
-        Parser = MD_parser(md_content_path)
-        BookTree = Parser.parse_markdown_to_linked_lists()
-        from Parser.Chunking_TextBook_Questions import TextBookQuestion
-        Chunker = TextBookQuestion(BookTree, file_name)
-        TBQ_df = Chunker.Question_Chunking()
-        
+        if file_judge['file_type'] == 'Book':
+            check = input('Do you want to chunk text book questions?(yes/no): ')
+            if check == 'yes':
+                from Parser.MD_section_parser import MD_parser
+                Parser = MD_parser(md_content_path)
+                BookTree = Parser.parse_markdown_to_linked_lists()
+                from Parser.Chunking_TextBook_Questions import TextBookQuestion
+                Chunker = TextBookQuestion(BookTree, file_name)
+                TBQ_df = Chunker.Question_Chunking()
+            
         return Chunked_df
     
 implementation = Implement()
