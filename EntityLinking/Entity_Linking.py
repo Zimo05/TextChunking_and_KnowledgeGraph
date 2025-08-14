@@ -116,7 +116,7 @@ class EntityLinking:
         }
         request_data = {
             "inputs": {
-                "Quesion": question_chunk, 
+                "Quesion": f'{self.subject}: {question_chunk}', 
             },
             "user": self.user
         }
@@ -129,3 +129,4 @@ class EntityLinking:
         return knowledge
     
 Linking = EntityLinking()
+
