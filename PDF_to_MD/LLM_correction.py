@@ -112,11 +112,13 @@ class correction:
     def _process_book(self):      
         content, md_content_path = self.pre_processing()
         while True:
-                check = input(f"""Please go to the "{md_content_path}" to double check the index(目录).
-                            The proper format should be: 
-                                                    1. 1 title occupy one row
-                                                    2. # Only at the front of the ‘第...章’
-                            If ok, please enter ok. If not revise it, then enter ok: """)
+                check = input(f"""
+Please go to the "{md_content_path}" to double check the index(目录).
+The proper format should be: 
+    1. 1 title occupy one row
+    2. # Only at the front of the ‘第...章’
+If ok, please enter ok. If not revise it, then enter ok:
+""")
                 with open(md_content_path, 'r') as f:
                     corrected_md = f.read()
                 if check.lower() == 'ok':
@@ -182,11 +184,13 @@ class correction:
         corrected_md_file_list = []
         content, md_content_path = self.pre_processing()
         while True:
-                check = input(f"""Please go to the "{md_content_path}" to double check the index（目录）.
-                            The proper index format should be:
-                                                        1. 'num. ', eg: ‘1. ’
-                                                        2. # only between 一、二、三、四、
-                            If ok, please enter ok. If not revise it, then enter ok: """)
+                check = input(f"""
+Please go to the "{md_content_path}" to double check the index
+The proper index format should be:
+    1. 'num. ', eg: ‘1. ’
+    2. # only between 一、二、三、四、
+If ok, please enter ok. If not revise it, then enter ok: 
+""")
                 with open(md_content_path, 'r') as f:
                     corrected_md = f.read()
                 if check.lower() == 'ok':
@@ -506,3 +510,4 @@ class correction:
         
         modified_content = '\n'.join(new_lines)
         return modified_content, md_content_path
+    
