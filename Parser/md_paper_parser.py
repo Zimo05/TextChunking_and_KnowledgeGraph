@@ -77,13 +77,11 @@ class PaperParser:
         
         df_config = {
             '阅读理解': {
-                'columns': ['text', 'text_type', 'questions', 'analysis', 'answer', 'question_type'],
+                'columns': ['text', 'questions', 'analysis', 'answer', 'question_type'],
                 'processor': lambda q: {
                     'text': q['text'],
-                    'text_type': question_judge[1], 
                     'questions': q['questions'],
-                    'analysis': q['analysis'],
-                    'answer': q['answer'],
+                    'answer and analysis': {'answer': q['answer'], 'analysis': q['analysis']},
                     'question_type': self._knowledge_extraction_1(
                         q['analysis'], 
                         self.question_knowledge['阅读理解']
@@ -92,13 +90,11 @@ class PaperParser:
             },
 
             '完形填空': {
-                'columns': ['text', 'text_type', 'questions', 'analysis', 'answer', 'question_type'],
+                'columns': ['text', 'questions', 'analysis', 'answer', 'question_type'],
                 'processor': lambda q: {
                     'text': q['text'],
-                    'text_type': question_judge[1], 
                     'questions': q['questions'],
-                    'analysis': q['analysis'],
-                    'answer': q['answer'],
+                    'answer and analysis': {'answer': q['answer'], 'analysis': q['analysis']},
                     'question_type': self._knowledge_extraction_2(
                         q['analysis'], 
                         self.question_knowledge['语法及词法']
@@ -107,13 +103,11 @@ class PaperParser:
             },
 
             '语法填空': {
-                'columns': ['text', 'text_type', 'questions', 'analysis', 'answer', 'question_type'],
+                'columns': ['text', 'questions', 'analysis', 'answer', 'question_type'],
                 'processor': lambda q: {
                     'text': q['text'],
-                    'text_type': question_judge[1],  # 同上
                     'questions': q['questions'],
-                    'analysis': q['analysis'],
-                    'answer': q['answer'],
+                    'answer and analysis': {'answer': q['answer'], 'analysis': q['analysis']},
                     'question_type': self._knowledge_extraction_2(
                         q['analysis'], 
                         self.question_knowledge['语法及词法']
@@ -122,12 +116,12 @@ class PaperParser:
             },
 
             '阅读理解七选五': {
-                'columns': ['text', 'questions', 'analysis', 'answer'],
+                'columns': ['text', 'questions', 'analysis', 'answer', 'question_type'],
                 'processor': lambda q: {
                     'text': q['text'],
                     'questions': q['questions'],
-                    'analysis': q['analysis'],
-                    'answer': q['answer'],
+                    'answer and analysis': {'answer': q['answer'], 'analysis': q['analysis']},
+                    'question_type': '上下文逻辑推断'
                 }
             }
         }
@@ -193,11 +187,19 @@ class PaperParser:
         
         with open(self.paper_path, 'r', encoding='utf-8') as f:
             text = f.read()
-        text = text.replace('．', '. ')
-        text = text.replace('，', ', ')
         text = text.replace('.', '. ')
+        text = text.replace('.  ', '. ')
+        translation_table = str.maketrans({
+                    '．': '.',
+                    '（': '(',
+                    '）': ')',
+                    '，': ','
+                })
+        text = text.translate(translation_table)
+
         sections = re.split(r'^#\s+[一二三四五六七八九十、]+.*$', text, flags=re.MULTILINE)
 
+        question_text_collection = []
         question_collection = []
         answer_collection = []
         knowledge_collection = []
@@ -235,10 +237,13 @@ class PaperParser:
             before, sep, after = quest.partition("【答案】")
             question = before
             answer = sep + after
-            question_collection.append(question)
+            
             answer_collection.append(answer)
             knowledge_list = []
             small_questions = question.split('## ')
+
+            question_text_collection.append(small_questions[0])
+            question_collection.extend(small_questions[1:])
             for char in small_questions[1:]:
                 try:
                     knowledge = Linking.link_question_with_entity(char)
@@ -263,7 +268,10 @@ class PaperParser:
                 knowledge_list = []
                 if '###' in question:
                     quests = question.split('### ')
-                    for quest in quests:
+                    question_collection.extend(quests[1:])
+                    question_text_collection.extend(quests[0])
+                    for quest in quests[1:]:
+
                         try:
                             knowledge = Linking.link_question_with_entity(quest)
                             knowledge_list.append(knowledge)
@@ -279,25 +287,26 @@ class PaperParser:
                         continue
                 knowledge_str = ', '.join(knowledge_list)
                 knowledge_collection.append(knowledge_str)
-        question_collection.extend(questions)
-        answer_collection.extend(answers)
+
+            answer_collection.extend(answers)
 
         df = pd.DataFrame()
-        max_len = max(len(question_collection), len(answer_collection), len(knowledge_collection))
+        max_len = max(len(question_text_collection), len(answer_collection), len(knowledge_collection))
 
-        if len(question_collection) < max_len:
-            question_collection.extend([None] * (max_len - len(question_collection)))
+        if len(question_text_collection) < max_len:
+            question_text_collection.extend([None] * (max_len - len(question_text_collection)))
         if len(answer_collection) < max_len:
             answer_collection.extend([None] * (max_len - len(answer_collection)))
         if len(knowledge_collection) < max_len:
             knowledge_collection.extend([None] * (max_len - len(knowledge_collection)))
 
-        assert len(question_collection) == len(answer_collection) == len(knowledge_collection), \
+        assert len(question_text_collection) == len(answer_collection) == len(knowledge_collection), \
             "列表长度仍不一致，请在输出文件夹内检查数据！"
         
-        df['questions'] = question_collection
+        df['question_text'] = question_text_collection
+        df['question'] = question_collection
         df['answer and analysis'] = answer_collection
-        df['knowledge'] = knowledge_collection
+        df['entity'] = knowledge_collection
 
         output_path = f'{self.output_path_base}/{self.subject}/{self.file_name}/chunked_df_{self.file_name}.csv'
         output_dir = os.path.dirname(output_path)
@@ -310,8 +319,19 @@ class PaperParser:
     def GENERAL_parser(self):
         with open(self.paper_path, 'r', encoding='utf-8') as f:
             content = f.read()
+
+        content = content.replace('.', '. ')
+        content = content.replace('.  ', '. ')
+        translation_table = str.maketrans({
+                    '．': '.',
+                    '（': '(',
+                    '）': ')',
+                })
+        content = content.translate(translation_table)
         
         knowledges=[]
+        question_text_collection = []
+        question_collection = []
 
         pattern = re.compile(r'## (.*?)【答案】', re.S)
         pattern_ans = re.compile(r'【答案】(.*?)(?=##|$)', re.S)
@@ -319,6 +339,47 @@ class PaperParser:
         answers = pattern_ans.findall(content)
         
         for question in questions:
+
+            if any(x in question for x in ['A. ', 'B. ', 'C. ', 'D ']):
+                # 选择题
+                lines = question.split('\n')
+                split_index = -1
+                for i, line in enumerate(lines):
+                    if any(opt in line for opt in ['A. ', 'B. ', 'C. ', 'D. ']):
+                        split_index = i
+                        break
+                if split_index != -1:
+                    part1 = '\n'.join(lines[:split_index]) 
+                    part2 = '\n'.join(lines[split_index:]) 
+                else:
+                    part1 = question 
+                    part2 = ""   
+
+                question_text_collection.append(part1)
+                question_collection.append(part2)
+            elif '###' in question:
+                # 主观题
+                lines = question.split('\n')
+                split_index = -1
+                for i, line in enumerate(lines):
+                    if '###' in line:
+                        split_index = i
+                        break
+
+                if split_index != -1:
+                    part1 = '\n'.join(lines[:split_index]) 
+                    part2 = '\n'.join(lines[split_index:]) 
+                else:
+                    part1 = question 
+                    part2 = ""   
+                question_text_collection.append(part1)
+                question_collection.append(part2)
+            else:
+                # 填空题
+                question_str = question.split('则')
+                question_text_collection.append(question_str[0])
+                question_collection.append(question_str[1])
+
             try:
                 knowledge = Linking.link_question_with_entity(question)
                 knowledges.append(knowledge)
@@ -326,9 +387,10 @@ class PaperParser:
                 knowledges.append(None)
                 continue
         df=pd.DataFrame()
-        df["questions"]=questions
+        df["question_text"]=question_text_collection
+        df['questions'] = question_collection
         df["analysis"]=answers
-        df["knowledges"]=knowledges
+        df["entity"]=knowledges
 
         for ind, row in df.iterrows():
             if row['knowledges'] == None:
