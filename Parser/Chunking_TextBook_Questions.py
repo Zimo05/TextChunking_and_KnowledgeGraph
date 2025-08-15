@@ -56,8 +56,6 @@ class TextBookQuestion:
                 Answers = []
                 Analyses = []
                 Knowledge = []
-                Source = []
-                Subject = []
 
                 for section in sections:
                     answer, analysis = self.Dify_structuring(section)
@@ -73,16 +71,12 @@ class TextBookQuestion:
                     Analyses.append(analysis)
                     Knowledge.append(knowledge)
                     Question.append(section)
-                    Source.append(chapter.title)
-                    Subject.append(self.subject)
                 
                 df = pd.DataFrame()
                 df['question'] = Question
                 df['answer'] = Answers
                 df['analysis'] = Analyses
                 df['knowledge'] = Knowledge
-                df['source'] = Source
-                df['subject'] = Subject
 
             df_list.append(df)
 
@@ -120,4 +114,3 @@ class TextBookQuestion:
         analysis = data['解析']
 
         return answer, analysis
-    
