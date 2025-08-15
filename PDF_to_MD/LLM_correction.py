@@ -111,14 +111,20 @@ class correction:
     
     def _process_book(self):      
         content, md_content_path = self.pre_processing()
-        while True:
+        while True:                
                 check = input(f"""
-Please go to the "{md_content_path}" to double check the index(目录).
+\033[93mPlease go to the "{md_content_path}"\033[0m
+
+\033[91m1. Double check the index(目录).\033[0m
 The proper format should be: 
-    1. 1 title occupy one row
-    2. # Only at the front of the ‘第...章’
-If ok, please enter ok. If not revise it, then enter ok:
-""")
+    \033[91m1. 1 title occupy 1 row\033[0m
+    \033[91m2. # Only at the front of the ‘第...章’\033[0m
+
+\033[91m2. Check title in Book content:
+    \033[0m Make sure that the chapter titles within index are present in the main text(such as: # 第五章三角函数)
+
+\033[92mIf ok, please enter [ok]. If not, revise it and then enter [ok]:\033[0m
+                """)
                 with open(md_content_path, 'r') as f:
                     corrected_md = f.read()
                 if check.lower() == 'ok':
