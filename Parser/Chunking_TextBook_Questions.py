@@ -71,11 +71,36 @@ class TextBookQuestion:
                     Analyses.append(analysis)
                     Knowledge.append(knowledge)
                     Question.append(section)
-                
+
+                AnswerAnalysis = []
+                for i in range(len(Answers)):
+                    answer_analysis = f'answer: {Answers[i]}, analysis: {Analyses}'
+                    AnswerAnalysis.append(answer_analysis)
+
+                Question_text = []
+                Question_body = []
+                for question in Question:
+                    if any(x in question for x in ['(1)', '(2)', '(3)', '(4)', 'A. ', 'B. ', 'C. ', 'D. ']):
+                        lines = question.split('\n')
+                        split_index = -1
+                        for i, line in enumerate(lines):
+                            if any(opt in line for opt in ['(1)', '(2)', '(3)', '(4)', 'A. ', 'B. ', 'C. ', 'D. ']):
+                                split_index = i
+                                break
+                        if split_index != -1:
+                            Question_text.append('\n'.join(lines[:split_index]))
+                            Question_body.append('\n'.join(lines[split_index:]))
+                        else:
+                            Question_text.append(question)
+                            Question_body.append(question)
+                    else:
+                        Question_text.append(question)
+                        Question_body.append(question)
+
                 df = pd.DataFrame()
-                df['question'] = Question
-                df['answer'] = Answers
-                df['analysis'] = Analyses
+                df['Question_text'] = Question_text
+                df['Question'] = Question_body
+                df['answer and analysis'] = AnswerAnalysis
                 df['knowledge'] = Knowledge
 
             df_list.append(df)
@@ -114,3 +139,4 @@ class TextBookQuestion:
         analysis = data['解析']
 
         return answer, analysis
+    
