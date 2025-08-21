@@ -28,11 +28,16 @@ This program is used to chunk textbook and papers and then structurize them into
      - For papers: Only special requirements for English, **Do not input a paper, Only one pdf of collection of question type within \['阅读理解', '完形填空', '语法填空'， '七选五'\] is acceptable**
 - Lastly, follow the guidance within the instructions during code execution to complete the inspection and modification
 
-  #### YML file declaration:
-  - 
+### YML file declaration:
+  - DIFY_ENG_Paper_Parser_API: Input is a paragragh string containing question and analysis, output is parsing structure signal
+  - DIFY_Entity_Linking_API: Input is a question string output is an entity string
+  - DIFY_Entity_Book_Linking_API: Input is a book title(or subtitle or subsubtitle or subsubsubtitle), output is an entity string
+  - DIFY_Correction_API: Input is a chunk of text
+  - DIFY_GEO_Paper_Parser_API: Input is a Geography choice question string, output is chunking signal
+  - DIFY_TextBook_Question_Answer: Input is a question, output is answer and analysis
 
 
 
-Acknowledgement:
+#### Acknowledgement:
 1. Thanks for **[MinerU](https://github.com/opendatalab/MinerU)** for offering fundamental pdf transformation tool.
 2. Thanks for **[DeepSeek](https://github.com/deepseek-ai)** for offering advanced AI models and open-source resources.
