@@ -10,8 +10,12 @@ This program is used to chunk textbook and papers and then structurize them into
 3. **(API version)Confugure:** Apply MinerU API om the official website: https://mineru.net/apiManage
 
 ## USING Guidance:
-- Open the Config.Settings to modify the dify, neo4j and elastic search API key and personal settings
+- Open the Config.Settings：
+     - Dify Confuguration: Upload Dify DSL in Entity Data and configure the API keys
+     - NEO4J API key
+     - 
 - Update the input and output data paths as needed
+     - 
 - Open the UserImplementation folder to run the UserCommand.py
 - follow the guidance to complete the file uploading and Configure settings
 - **For input data**:
