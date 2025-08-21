@@ -19,7 +19,8 @@ This program is used to chunk textbook and papers and then structurize them into
      - For papers: Only special requirements for English, **Do not input a paper, Only one pdf of collection of question type within \['阅读理解', '完形填空', '语法填空'， '七选五'\] is acceptable**
  
 - Lastly, follow the guidance within the instructions during code execution
- 
+
+
 
 Acknowledgement:
 1. Thanks for **[MinerU](https://github.com/opendatalab/MinerU)** for offering fundamental pdf transformation tool.
