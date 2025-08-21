@@ -1,0 +1,200 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: ENG_Paper_Structure_Parser
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.5@fd6efd37c2a931911de8ab9ca3ba2da303bef146d45ee87ad896b04b36d09403
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1753252418197-source-1753252429370-target
+      selected: false
+      source: '1753252418197'
+      sourceHandle: source
+      target: '1753252429370'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1753252429370-source-1753252464790-target
+      selected: false
+      source: '1753252429370'
+      sourceHandle: source
+      target: '1753252464790'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: Start
+        type: start
+        variables:
+        - label: Paper
+          max_length: 1000000000000
+          options: []
+          required: true
+          type: paragraph
+          variable: Paper
+      height: 88
+      id: '1753252418197'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.5
+            top_p: 0.5
+          mode: chat
+          name: deepseek-chat
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 5e2543f2-9543-4fbc-b3df-5922013e5032
+          role: system
+          text: '请对给定的英文题目内容({{#1753252418197.Paper#}})进行结构化分析，将其划分为三个明确的部分：
+
+            1. 文章主体内容
+
+            2. 问题及选项部分
+
+            3. 答案解析部分
+
+            要求：
+
+            精确识别每个部分的起始和结束位置
+
+            对于每个切换位置，提供发生转义的具体位置及前后三个字的上下文内容
+
+            返回格式为list[dict]，每个字典包含：
+
+            {
+
+            "part_name": "部分名称",
+
+            "start_index": 开始位置,
+
+            "end_index": 结束位置,
+
+            } 位置信息就用原文里的句子，如果是中文的话就用原文里的两句话'
+        selected: true
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 88
+      id: '1753252429370'
+      position:
+        x: 383
+        y: 282
+      positionAbsolute:
+        x: 383
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1753252429370'
+          - text
+          variable: Structure
+        selected: false
+        title: End
+        type: end
+      height: 88
+      id: '1753252464790'
+      position:
+        x: 686
+        y: 282
+      positionAbsolute:
+        x: 686
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    viewport:
+      x: -61.31438123510566
+      y: 54.91236939799791
+      zoom: 1.0296986792922143
