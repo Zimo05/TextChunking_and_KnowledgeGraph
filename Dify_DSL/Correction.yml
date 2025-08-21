@@ -1,5 +1,5 @@
 app:
-  description: ''
+  description: '对应到Config.Settings里的DIFY_Correction_API'
   icon: 🤖
   icon_background: '#FFEAD5'
   mode: workflow
