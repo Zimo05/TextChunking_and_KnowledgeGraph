@@ -18,12 +18,10 @@ This program is used to chunk textbook and papers and then structurize them into
 - Update the input and output data paths (MD_file, Chunked_paper, Chunked_book) as needed(**If you are Mac user, do not modify, just skip this**)
   - (**For windows user**): Complete the file path prefix, for example: from ***./Data/Updated/Papers*** to ***D://USER/..../TextChunking_and_KnowledgeGraph/Data/Updated/Papers***
 - Open the UserImplementation folder to run the UserCommand.py
-- follow the guidance to complete the file uploading and Configure settings
 - **For input data**:
      - For textbook: No specific requirement
      - For papers: Only special requirements for English, **Do not input a paper, Only one pdf of collection of question type within \['阅读理解', '完形填空', '语法填空'， '七选五'\] is acceptable**
- 
-- Lastly, follow the guidance within the instructions during code execution
+- Lastly, follow the guidance within the instructions during code execution to complete the inspection and modification
 
 
 
