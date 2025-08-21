@@ -227,7 +227,7 @@ If ok, please enter ok. If not revise it, then enter ok:
             new_lines.append(line)
         result = '\n'.join(new_lines)
         with open(md_content_path, 'w', encoding='utf-8') as file:
-            file.write(corrected_md_file)
+            file.write(result)
         
         if self.subject in ['MAT', 'PHY', 'CHM']:
             check = input('Please confirm if you really need LLM to correct this file (yes/no): ')
