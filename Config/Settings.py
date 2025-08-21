@@ -26,12 +26,12 @@ class settings:
             },
         'Storage':{
                 'PDF_to_MD':{
-                    'MD_file':'' # Attention please: if your saving path is ./Data/MarkdownFile/Book/MAT/必修第一册A版/, 
+                    'MD_file':'./Data/MarkdownFile' # Attention please: if your saving path is ./Data/MarkdownFile/Book/MAT/必修第一册A版/, 
                                     # then you only need to fill ./Data/MarkdownFile in this position!!!
                 },
                 'Parser':{
-                    'Chunked_paper':'', # eg: ./Data/Updated/Papers
-                    'Chunked_book': '' # eg: ./Data/Updated/TextBooks
+                    'Chunked_paper':'./Data/Updated/Papers', # eg: ./Data/Updated/Papers
+                    'Chunked_book': './Data/Updated/TextBooks' # eg: ./Data/Updated/TextBooks
                 },            
             },
         'Entity_linking':{
