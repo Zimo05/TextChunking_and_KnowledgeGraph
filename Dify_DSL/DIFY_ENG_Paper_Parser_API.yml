@@ -1,5 +1,5 @@
 app:
-  description: ''
+  description: '对应到Config.Settings里的DIFY_ENG_Paper_Parser_API'
   icon: 🤖
   icon_background: '#FFEAD5'
   mode: workflow
