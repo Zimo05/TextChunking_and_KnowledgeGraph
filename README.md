@@ -13,9 +13,10 @@ This program is used to chunk textbook and papers and then structurize them into
 - Open the Config.Settings：
      - Dify Confuguration: Upload Dify DSL in Entity Data and configure the API keys
      - NEO4J API key
-     - 
-- Update the input and output data paths as needed
-     - 
+     - MinerU token
+     - Deepseek API
+- Update the input and output data paths (MD_file, Chunked_paper, Chunked_book) as needed(**If you are Mac user, do not modify, just skip this**)
+  - (**For windows user**): Complete the file path prefix, for example: from ***./Data/Updated/Papers*** to ***D://USER/..../TextChunking_and_KnowledgeGraph/Data/Updated/Papers***
 - Open the UserImplementation folder to run the UserCommand.py
 - follow the guidance to complete the file uploading and Configure settings
 - **For input data**:
