@@ -123,8 +123,8 @@ The proper format should be:
 \033[91m2. Check title in Book content:
     \033[0m Make sure that the chapter titles within index are present in the main text(such as: # 第五章三角函数)
 
-\033[92mIf ok, please enter [ok]. If not, revise it and then enter [ok]:\033[0m
-                """)
+\033[92mIf ok, please enter [ok]. If not, revise it and then enter [ok]:\033[0m""")
+
                 with open(md_content_path, 'r') as f:
                     corrected_md = f.read()
                 if check.lower() == 'ok':
@@ -193,8 +193,8 @@ The proper format should be:
                 check = input(f"""
 Please go to the "{md_content_path}" to double check the index
 The proper index format should be:
-    1. 'num. ', eg: ‘1. ’
-    2. # only between 一、二、三、四、
+    1. # only between 一、二、三、四、
+    2. The sub-questions start on a new line， eg: '\n2. '
 If ok, please enter ok. If not revise it, then enter ok: 
 """)
                 with open(md_content_path, 'r') as f:
