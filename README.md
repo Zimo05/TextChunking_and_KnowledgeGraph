@@ -9,9 +9,14 @@ This program is used to chunk textbook and papers and then structurize them into
 2. **Create a virtual environment, run the requirement.txt：** pip install -r requirements.txt
 3. **(API version)Confugure:** Apply MinerU API om the official website: https://mineru.net/apiManage
 
+## Dify configuration:
+1. Open Dify_DSL and import the yml files
+2. Create a knowledge and import the knowledge tables from Entity Data
+3. Enter into each app to configure **Knowledge Retrieval** node.
+
 ## USING Guidance:
 - Open the Config.Settings：
-     - Dify Confuguration: Upload Dify DSL in Entity Data and configure the API keys
+     - Dify Confuguration: Configure the API keys
      - NEO4J API key
      - MinerU token
      - Deepseek API
@@ -22,6 +27,9 @@ This program is used to chunk textbook and papers and then structurize them into
      - For textbook: No specific requirement
      - For papers: Only special requirements for English, **Do not input a paper, Only one pdf of collection of question type within \['阅读理解', '完形填空', '语法填空'， '七选五'\] is acceptable**
 - Lastly, follow the guidance within the instructions during code execution to complete the inspection and modification
+
+  #### YML file declaration:
+  - 
 
 
 
