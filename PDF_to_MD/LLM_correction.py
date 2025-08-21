@@ -226,6 +226,8 @@ If ok, please enter ok. If not revise it, then enter ok:
                 line = re.sub(r'(\(\d+\))', r'### \1', line)
             new_lines.append(line)
         result = '\n'.join(new_lines)
+        with open(md_content_path, 'w', encoding='utf-8') as file:
+            file.write(corrected_md_file)
         
         if self.subject in ['MAT', 'PHY', 'CHM']:
             check = input('Please confirm if you really need LLM to correct this file (yes/no): ')
@@ -257,6 +259,8 @@ If ok, please enter ok. If not revise it, then enter ok:
                 corrected_md_file = result
         else:
             corrected_md_file = result
+        with open(md_content_path, 'w', encoding='utf-8') as file:
+            file.write(corrected_md_file)
 
         return corrected_md_file, md_content_path
     
