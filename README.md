@@ -36,7 +36,29 @@ This program is used to chunk textbook and papers and then structurize them into
   - DIFY_GEO_Paper_Parser_API: Input is a Geography choice question string, output is chunking signal
   - DIFY_TextBook_Question_Answer: Input is a question, output is answer and analysis
 
+### Functions declaration:
+1. **[MinerU_Transfrom](https://github.com/Zimo05/TextChunking_and_KnowledgeGraph/blob/main/PDF_to_MD/MinerU_Transform.py)**: 
+   - Input: pdf_file, file_name, file_judge
+   - Output: mineru zip file
+2. **[LLM_correction](https://github.com/Zimo05/TextChunking_and_KnowledgeGraph/blob/main/PDF_to_MD/LLM_correction.py)(Decompressing, structurizing and correction are involved in this file)**: 
+   - Input: mineru zip file
+   - Output: corrected markdown file
+3. **[MD_section_parser](https://github.com/Zimo05/TextChunking_and_KnowledgeGraph/blob/main/Parser/MD_section_parser.py)**:
+   - Input: corrected markdown file
+   - Output: list of chapter root(book tree)
+  
+4. **[Chunking_TextBook_Questions](https://github.com/Zimo05/TextChunking_and_KnowledgeGraph/blob/main/Parser/Chunking_TextBook_Questions.py)**:
+   - Input: book tree
+   - Output: chunked textbook question(csv format) with column(question text, question, answer and analysis, entity)
 
+5. **[md_paper_parser](https://github.com/Zimo05/TextChunking_and_KnowledgeGraph/blob/main/Parser/md_paper_parser.py)**:
+   - Input: corrected markdown file
+   - Output: chunked paper question(csv format) with column(question text, question, answer and analysis, entity)
+  
+6. **[TextBook_LumberChunker](https://github.com/Zimo05/TextChunking_and_KnowledgeGraph/blob/main/Parser/TextBook_LumberChunker.py)**:
+   - Input: book tree
+   - Output: chunked book content(csv format) with column(content, title, parent title, entity)
+   
 
 #### Acknowledgement:
 1. Thanks for **[MinerU](https://github.com/opendatalab/MinerU)** for offering fundamental pdf transformation tool.
